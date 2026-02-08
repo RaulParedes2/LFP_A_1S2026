@@ -3,7 +3,8 @@
 using namespace std;
 
 class gato{
-
+    
+    //Atributos
     private:
         string nombre;
         int edad;
@@ -16,7 +17,7 @@ class gato{
         color = c;
 
     }
-
+    //Metodos
     void maullar(){
         cout<<nombre<< ": Dice Miauuuuuuu"<<endl;
     }
