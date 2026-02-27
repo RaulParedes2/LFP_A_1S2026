@@ -25,7 +25,7 @@ class Nota{
         anio = a;
     }
 
-    int getCartnet(){return carnet;}
+    int getCarnet(){return carnet;}
     int getCodigoCurso(){return codigoCurso;}
     double getNota(){return nota;}
     string getCiclo(){return ciclo;}

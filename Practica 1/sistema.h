@@ -8,6 +8,8 @@
 #include "curso.h"
 #include "nota.h"
 
+using namespace std;
+
 class Sistema
 {
 
@@ -18,23 +20,30 @@ private:
 
     string rutaBase = "data/";
     string rutaReportes = "reportes/";
-    
+
     double calcularPromedio(vector<double> &datos);
     double calcularMediana(vector<double> datos);
     double calcularDesviacionEstandar(vector<double> &datos);
     double calcularPercentil(vector<double> datos, double percentil);
 
-public:
+    bool estudiantesCargados = false;
+    bool cursosCargados = false;
+    bool notasCargadas = false;
 
-    void reporteEstadisticasCursoHTML();
+public:
     void cargarEstudiantes(string ruta);
     void cargarCursos(string ruta);
     void cargarNotas(string ruta);
 
-    void reporteEstadistica();
-    void reporteRendimientoEstudiante();
-    void reporteTop10();
-    void reporteMayorReprobacion();
-    void reporteAnalisisCarrera();
+    // void reporteEstadistica();
+    void reporteEstadisticasCursoHTML();
+    // void reporteRendimientoEstudiante();
+    void reporteRendimientoEstudianteHTML();
+    // void reporteTop10();
+    void reporteTop10HTML();
+    // void reporteMayorReprobacion();
+    void reporteIndiceReprobacionHTML();
+    // void reporteAnalisisCarrera();
+    void reporteAnalisisCarreraHTML();
 };
 #endif

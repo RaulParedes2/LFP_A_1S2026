@@ -1,5 +1,6 @@
 #include <iostream>
 #include <exception>
+#include <limits>
 #include "sistema.h"
 
 using namespace std;
@@ -41,29 +42,58 @@ int main()
         {
             switch (opcion)
             {
-            case 1:
+
+            /*   case 1:
                 cout << "Ingrese ruta del archivo estudiantes.lfp: ";
-                cin.ignore();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
                 getline(cin, ruta);
                 sistema.cargarEstudiantes(ruta);
                 break;
-
-            case 2:
-                cout << "Ingrese ruta del archivo cursos.lfp: ";
-                cin.ignore();
-                getline(cin, ruta);
-                sistema.cargarCursos(ruta);
+                */
+            case 1:
+                sistema.cargarEstudiantes("estudiantes.lfp");
                 break;
 
+                /*case 2:
+                    cout << "Ingrese ruta del archivo cursos.lfp: ";
+                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                    getline(cin, ruta);
+                    sistema.cargarCursos(ruta);
+                    break;
+                    */
+            case 2:
+                sistema.cargarCursos("cursos.lfp");
+                break;
+
+                /*case 3:
+                    cout << "Ingrese ruta del archivo notas.lfp: ";
+                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                    getline(cin, ruta);
+                    sistema.cargarNotas(ruta);
+                    break;
+                    */
             case 3:
-                cout << "Ingrese ruta del archivo notas.lfp: ";
-                cin.ignore();
-                getline(cin, ruta);
-                sistema.cargarNotas(ruta);
+                sistema.cargarNotas("notas.lfp");
                 break;
 
             case 4:
                 sistema.reporteEstadisticasCursoHTML();
+                break;
+
+            case 5:
+                sistema.reporteRendimientoEstudianteHTML();
+                break;
+
+            case 6:
+                sistema.reporteTop10HTML();
+                break;
+
+            case 7:
+                sistema.reporteIndiceReprobacionHTML();
+                break;
+
+            case 8:
+                sistema.reporteAnalisisCarreraHTML();
                 break;
 
             case 9:
