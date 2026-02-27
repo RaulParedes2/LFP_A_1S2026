@@ -27,6 +27,13 @@ class Estudiante{
     string nombreCompleto(){
         return nombre + " " + apellido;
     }
+
+    int getCarnet(){return carnet;}
+    string getNombre(){return nombre;}
+    string getApellido(){return apellido;}
+    string getCarrera(){return carrera;}
+    int getSemestre(){return semestre;}
+
     
 };
 

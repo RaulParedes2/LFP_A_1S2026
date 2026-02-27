@@ -26,5 +26,11 @@ class Curso{
             carrera = car;
 
         }
+
+        int getCodigo() { return codigo; }
+        string getNombre(){return nombre;}
+        int getCreditos(){return creditos;}
+        int getSemestre(){return semestre;}
+        string getCarrera(){return carrera;}
 };
 #endif
