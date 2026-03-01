@@ -12,19 +12,24 @@ using namespace std;
 
 class Sistema
 {
+    // atributos de la clase sistema
 
 private:
     vector<Estudiante> estudiantes;
     vector<Curso> cursos;
     vector<Nota> notas;
 
-    string rutaBase = "data/";
-    string rutaReportes = "reportes/";
+    string rutaBase = "data/";         // nombre de la carpeta de los archivos lfp
+    string rutaReportes = "reportes/"; // nombre de la carpeta de los reportes
+
+    // Calculos estadisticos
 
     double calcularPromedio(vector<double> &datos);
     double calcularMediana(vector<double> datos);
     double calcularDesviacionEstandar(vector<double> &datos);
     double calcularPercentil(vector<double> datos, double percentil);
+
+    // Duplicado de archivos
 
     bool estudiantesCargados = false;
     bool cursosCargados = false;
@@ -35,15 +40,14 @@ public:
     void cargarCursos(string ruta);
     void cargarNotas(string ruta);
 
-    // void reporteEstadistica();
     void reporteEstadisticasCursoHTML();
-    // void reporteRendimientoEstudiante();
+
     void reporteRendimientoEstudianteHTML();
-    // void reporteTop10();
+
     void reporteTop10HTML();
-    // void reporteMayorReprobacion();
+
     void reporteIndiceReprobacionHTML();
-    // void reporteAnalisisCarrera();
+
     void reporteAnalisisCarreraHTML();
 };
 #endif

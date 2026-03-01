@@ -16,23 +16,23 @@ using namespace std;
 
 void Sistema::cargarEstudiantes(string nombreArchivo)
 {
-     if (estudiantesCargados)
+    if (estudiantesCargados)
     {
         cout << "Recargando estudiantes...\n";
         estudiantes.clear();
     }
 
-    ifstream archivo(rutaBase + nombreArchivo);
+    ifstream archivo(rutaBase + nombreArchivo); // Busqueda de la ruta y nombre del archivo
     ;
 
     if (!archivo.is_open())
     {
-        cout << "Error: No se pudo abrir el archivo: "
+        cout << "Error: No se pudo abrir el archivo: " // error de archivo
              << rutaBase + nombreArchivo << endl;
-        return; // Aquí sí es correcto usar return
+        return;
     }
 
-    string linea;
+    string linea; // Lectura de linea del archivo
 
     while (getline(archivo, linea))
     {
@@ -44,7 +44,7 @@ void Sistema::cargarEstudiantes(string nombreArchivo)
         string dato;
         vector<string> partes;
 
-        while (getline(ss, dato, ','))
+        while (getline(ss, dato, ',')) // se paracion de los datos por comas
         {
             partes.push_back(dato);
         }
@@ -54,18 +54,18 @@ void Sistema::cargarEstudiantes(string nombreArchivo)
             try
             {
                 Estudiante e(
-                    stoi(partes[0]), // carnet
-                    partes[1],       // nombre
-                    partes[2],       // apellido
-                    partes[3],       // carrera
-                    stoi(partes[4])  // semestre
+                    stoi(partes[0]), // carnet int
+                    partes[1],       // nombre string
+                    partes[2],       // apellido string
+                    partes[3],       // carrera string
+                    stoi(partes[4])  // semestre int
                 );
 
                 estudiantes.push_back(e);
             }
             catch (...)
             {
-                cout << "Error en los datos del estudiante: "
+                cout << "Error en los datos del estudiante: " // campos incorrectos
                      << linea << endl;
             }
         }
@@ -82,17 +82,17 @@ void Sistema::cargarEstudiantes(string nombreArchivo)
 void Sistema::cargarCursos(string nombreArchivo)
 {
 
-     if (cursosCargados)
+    if (cursosCargados)
     {
         cout << "Recargando Cursos...\n";
         cursos.clear();
     }
 
-    ifstream archivo(rutaBase + nombreArchivo);
+    ifstream archivo(rutaBase + nombreArchivo); // Busqueda de la ruta y nombre del archivo
 
     if (!archivo.is_open())
     {
-        cout << "Error: No se pudo abrir el archivo de cursos: "
+        cout << "Error: No se pudo abrir el archivo de cursos: " // error de archivo
              << rutaBase + nombreArchivo << endl;
         return;
     }
@@ -108,7 +108,7 @@ void Sistema::cargarCursos(string nombreArchivo)
         string dato;
         vector<string> partes;
 
-        while (getline(ss, dato, ','))
+        while (getline(ss, dato, ',')) // se paracion de los datos por comas
         {
             partes.push_back(dato);
         }
@@ -118,11 +118,11 @@ void Sistema::cargarCursos(string nombreArchivo)
             try
             {
                 Curso c(
-                    stoi(partes[0]),  // codigo
-                    partes[1],        // nombre
-                    stoi(partes[2]),  // creditos
-                    stoi(partes[3]),  // semestre
-                    partes[4]         // carrera
+                    stoi(partes[0]), // codigo int
+                    partes[1],       // nombre string
+                    stoi(partes[2]), // creditos int
+                    stoi(partes[3]), // semestre int
+                    partes[4]        // carrera string
                 );
 
                 cursos.push_back(c);
@@ -144,17 +144,17 @@ void Sistema::cargarCursos(string nombreArchivo)
 
 void Sistema::cargarNotas(string nombreArchivo)
 {
-     if (notasCargadas)
+    if (notasCargadas)
     {
         cout << "Recargando notas...\n";
         notas.clear();
     }
 
-    ifstream archivo(rutaBase + nombreArchivo);
+    ifstream archivo(rutaBase + nombreArchivo); // Busqueda de la ruta y nombre del archivo
 
     if (!archivo.is_open())
     {
-        cout << "Error: No se pudo abrir el archivo de notas: "
+        cout << "Error: No se pudo abrir el archivo de notas: " // error de archivo
              << rutaBase + nombreArchivo << endl;
         return;
     }
@@ -170,7 +170,7 @@ void Sistema::cargarNotas(string nombreArchivo)
         string dato;
         vector<string> partes;
 
-        while (getline(ss, dato, ','))
+        while (getline(ss, dato, ',')) // se paracion de los datos por comas
         {
             partes.push_back(dato);
         }
@@ -180,11 +180,11 @@ void Sistema::cargarNotas(string nombreArchivo)
             try
             {
                 Nota n(
-                    stoi(partes[0]),  // carnet
-                    stoi(partes[1]),  // codigo curso
-                    stod(partes[2]),  // nota
-                    partes[3],        // ciclo
-                    stoi(partes[4])   // año
+                    stoi(partes[0]), // carnet int
+                    stoi(partes[1]), // codigo curso int
+                    stod(partes[2]), // nota bool
+                    partes[3],       // ciclo int
+                    stoi(partes[4])  // año int
                 );
 
                 notas.push_back(n);
@@ -202,38 +202,42 @@ void Sistema::cargarNotas(string nombreArchivo)
     cout << " Notas cargadas correctamente.\n";
 }
 //----------------------------------------------------------------------------
-//Calculos Estadisticos
+// Calculos Estadisticos
 //----------------------------------------------------------------------------
 // Promedio
 //----------------------------------------------------------------------------
 
-double Sistema :: calcularPromedio(vector<double> &datos){
-    if(datos.empty()) 
-    return 0;
+double Sistema ::calcularPromedio(vector<double> &datos)
+{
+    if (datos.empty())
+        return 0;
 
     double suma = 0;
 
-    for(double n : datos){
-        suma +=n;
+    for (double n : datos)
+    {
+        suma += n; // suma uno a uno los datos
     }
-    return suma/datos.size();
-} 
+    return suma / datos.size(); // divide la sumatoria en la cantidad de datos que hay
+}
 
 //----------------------------------------------------------------------------
 // Mediana
 //----------------------------------------------------------------------------
 
-double Sistema :: calcularMediana ( vector<double> datos){
-    if (datos.empty()) return 0;
+double Sistema ::calcularMediana(vector<double> datos)
+{
+    if (datos.empty())
+        return 0;
 
     sort(datos.begin(), datos.end());
 
     int n = datos.size();
 
     if (n % 2 == 0)
-        return (datos[n/2 - 1] + datos[n/2]) / 2.0;
+        return (datos[n / 2 - 1] + datos[n / 2]) / 2.0;
     else
-        return datos[n/2];
+        return datos[n / 2];
 }
 //----------------------------------------------------------------------------
 // DESVIACIÓN ESTÁNDAR
@@ -241,7 +245,8 @@ double Sistema :: calcularMediana ( vector<double> datos){
 
 double Sistema::calcularDesviacionEstandar(vector<double> &datos)
 {
-    if (datos.empty()) return 0;
+    if (datos.empty())
+        return 0;
 
     double promedio = calcularPromedio(datos);
     double suma = 0;
@@ -256,7 +261,8 @@ double Sistema::calcularDesviacionEstandar(vector<double> &datos)
 //----------------------------------------------------------------------------
 double Sistema::calcularPercentil(vector<double> datos, double percentil)
 {
-    if (datos.empty()) return 0;
+    if (datos.empty())
+        return 0;
 
     sort(datos.begin(), datos.end());
 
@@ -275,7 +281,7 @@ double Sistema::calcularPercentil(vector<double> datos, double percentil)
 
 void Sistema::reporteEstadisticasCursoHTML()
 {
-    ofstream html(rutaReportes+"reporte_estadisticas_curso.html");
+    ofstream html(rutaReportes + "reporte_estadisticas_curso.html");
 
     if (!html.is_open())
     {
@@ -283,21 +289,21 @@ void Sistema::reporteEstadisticasCursoHTML()
         return;
     }
 
-    html << "<!DOCTYPE html>\n";
-    html << "<html>\n<head>\n";
-    html << "<meta charset='UTF-8'>\n";
-    html << "<title>Reporte Estadísticas por Curso</title>\n";
-    html << "<style>\n";
-    html << "body{font-family: Arial;}\n";
-    html << "table{border-collapse: collapse; width: 100%;}\n";
-    html << "th, td{border:1px solid black; padding:8px; text-align:center;}\n";
-    html << "th{background-color:#4CAF50; color:white;}\n";
+    html << "<!DOCTYPE html>\n";                                                 // Inicio del html
+    html << "<html>\n<head>\n";                                                  // Cabeza
+    html << "<meta charset='UTF-8'>\n";                                          // Gramatica
+    html << "<title>Reporte Estadísticas por Curso</title>\n";                   // titulo
+    html << "<style>\n";                                                         // estilo de letra
+    html << "body{font-family: Arial;}\n";                                       // Arial
+    html << "table{border-collapse: collapse; width: 100%;}\n";                  // tabla
+    html << "th, td{border:1px solid black; padding:8px; text-align:center;}\n"; // color y centralizado texto
+    html << "th{background-color:#4CAF50; color:white;}\n";                      // color de las celdas
     html << "</style>\n";
     html << "</head>\n<body>\n";
 
-    html << "<h1>Reporte: Estadísticas Generales por Curso</h1>\n";
+    html << "<h1>Reporte: Estadísticas Generales por Curso</h1>\n"; // titulo dentro de la tabla
     html << "<table>\n";
-    html << "<tr>";
+    html << "<tr>"; // Las columnas
     html << "<th>Curso</th>";
     html << "<th>Estudiantes</th>";
     html << "<th>Promedio</th>";
@@ -321,6 +327,7 @@ void Sistema::reporteEstadisticasCursoHTML()
 
         if (!notasCurso.empty())
         {
+            // llenado de las celdas con la informacion y calculos
             double promedio = calcularPromedio(notasCurso);
             double mediana = calcularMediana(notasCurso);
             double desviacion = calcularDesviacionEstandar(notasCurso);
