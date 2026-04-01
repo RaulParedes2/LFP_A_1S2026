@@ -1,0 +1,32 @@
+digraph Hospital {
+  rankdir=TB;
+  node [shape=box, style=filled, fontname="Arial"];
+
+  H [label="Hospital General San Carlos", fillcolor="#1A4731", fontcolor=white, shape=ellipse];
+  P [label="PACIENTES", fillcolor="#2E7D52", fontcolor=white];
+  M [label="MEDICOS", fillcolor="#2E7D52", fontcolor=white];
+  C [label="CITAS", fillcolor="#2E7D52", fontcolor=white];
+  D [label="DIAGNOSTICOS", fillcolor="#2E7D52", fontcolor=white];
+
+  H -> P; H -> M; H -> C; H -> D;
+
+  p0x251f1eb4160 [label="Ana Lopez\n34 años | O+", fillcolor="#D4EDDA"];
+  P -> p0x251f1eb4160;
+  p0x251f1eb4210 [label="Carlos Mendoza\n62 años | O-", fillcolor="#D4EDDA"];
+  P -> p0x251f1eb4210;
+
+  m0x251f1e96760 [label="Dr. Roberto Juarez\nMED-001 | CARDIOLOGIA", fillcolor="#D6EAF8"];
+  M -> m0x251f1e96760;
+  m0x251f1e967e0 [label="Dra. Ana Solis\nMED-002 | NEUROLOGIA", fillcolor="#D6EAF8"];
+  M -> m0x251f1e967e0;
+
+  p0x251f1eb4160 -> m0x251f1e96760 [label="2025-04-10 09:00", color="#E67E22", style=dashed];
+  p0x251f1eb4210 -> m0x251f1e967e0 [label="2025-04-10 11:30", color="#E67E22", style=dashed];
+
+  d1 [label="Hipertension Arterial\nLosartan 50mg / DIARIA", fillcolor="#FDEBD0"];
+  D -> d1;
+  d1 -> p0x251f1eb4160 [label="diagnóstico activo", color="#C0392B"];
+  d2 [label="Diabetes Tipo 2\nMetformina 850mg / CADA_12_HORAS", fillcolor="#FDEBD0"];
+  D -> d2;
+  d2 -> p0x251f1eb4210 [label="diagnóstico activo", color="#C0392B"];
+}
