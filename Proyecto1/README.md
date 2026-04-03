@@ -43,7 +43,8 @@ Instalación y Compilación
 3. Compilar el proyecto (.\build_clean.bat)
 4. Ejecutar la aplicación (.\build\MedLexer.exe)
 
-Lenguaje MedLang
+## Lenguaje MedLang
+
 HOSPITAL {
     PACIENTES {
         paciente: "Nombre" [edad: 00, tipo_sangre: "Tipo"]
@@ -59,20 +60,21 @@ HOSPITAL {
     }
 }
 
-Uso de la Aplicación
+## Uso de la Aplicación
 
-Interfaz Principal
-Cargar Archivo - Botón "Cargar Archivo .med"
+# Interfaz Principal
 
-Analizar - Botón "Analizar" para procesar el código
+- Cargar Archivo - Botón "Cargar Archivo .med"
 
-Ver Tokens - Pestaña "Tokens" muestra la tabla de tokens
+- Analizar - Botón "Analizar" para procesar el código
 
-Ver Errores - Pestaña "Errores" muestra errores léxicos
+- Ver Tokens - Pestaña "Tokens" muestra la tabla de tokens
 
-Generar Reportes - Botones de reportes 1-4
+- Ver Errores - Pestaña "Errores" muestra errores léxicos
 
-Estructura del Proyecto
+- Generar Reportes - Botones de reportes 1-4
+
+# Estructura del Proyecto
 
 MedLexer/
 ├── include/
@@ -100,7 +102,7 @@ MedLexer/
 ├── README.md
 └── .gitignore
 
-Autores
+## Autores
 
-Daniel Predes - Desarrollo inicial - GitHub
+- Daniel Predes - Desarrollo inicial - GitHub
 
