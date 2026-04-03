@@ -1,0 +1,17 @@
+HOSPITAL {
+    PACIENTES {
+        paciente: "Maria Garcia" [edad: 45, tipo_sangre: "A+"],
+        paciente: "Carlos Mendoza" [edad: 62, tipo_sangre: "O-"]
+    }
+    MEDICOS {
+        medico: "Dr. Roberto Juarez" [especialidad: CARDIOLOGIA, codigo: "MED-001"],
+        medico: "Dra. Ana Solis" [especialidad: NEUROLOGIA, codigo: "MED-002"]
+    }
+    CITAS {
+        cita: "Maria Garcia" con "Dr. Roberto Juarez" [fecha: 2025-04-10, hora: 09:00],
+        cita: "Carlos Mendoza" con "Dra. Ana Solis" [fecha: 2025-04-10, hora: 11:30]
+    }
+    DIAGNOSTICOS {
+        diagnostico: "Maria Garcia" [condicion: "Hipertension Arterial", medicamento: "Losartan 50mg", dosis: DIARIA]
+    }
+}

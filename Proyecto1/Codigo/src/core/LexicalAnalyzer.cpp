@@ -1,7 +1,7 @@
 #include "../../include/core/LexicalAnalyzer.h"
 #include <cctype>
 #include <sstream>
-#include <regex>
+#include <iostream>
 
 using namespace std;
 
@@ -91,7 +91,7 @@ vector<Token> LexicalAnalyzer::analyze()
 
     if (!sourceCode.empty())
     {
-        advance(); // Cargar primer caracter
+        advance();
     }
 
     while (!isEOF())
@@ -108,178 +108,209 @@ vector<Token> LexicalAnalyzer::analyze()
         }
     }
 
-    // Agregar token EOF
     tokens.push_back(Token(TokenType::END_OF_FILE, "", line, column));
 
     return tokens;
 }
 
-Token LexicalAnalyzer::nextToken() {
+Token LexicalAnalyzer::nextToken()
+{
     int startLine = line;
     int startColumn = column;
-    
-    // Identificar el tipo de token basado en el caracter actual
-    if (isalpha(currentChar)) {
+
+    if (isalpha(currentChar))
+    {
         return recognizeIdentifier();
     }
-    else if (isdigit(currentChar)) {
-        // Podría ser número, fecha u hora
+    else if (isdigit(currentChar))
+    {
         return recognizeNumberOrDateTime();
     }
-    else if (currentChar == '"') {
+    else if (currentChar == '"')
+    {
         return recognizeString();
     }
-    else {
-        // Delimitadores y símbolos
+    else
+    {
         char c = currentChar;
         string lexeme(1, c);
         advance();
-        
-        switch (c) {
-            case '{': return Token(TokenType::LBRACE, lexeme, startLine, startColumn);
-            case '}': return Token(TokenType::RBRACE, lexeme, startLine, startColumn);
-            case '[': return Token(TokenType::LBRACKET, lexeme, startLine, startColumn);
-            case ']': return Token(TokenType::RBRACKET, lexeme, startLine, startColumn);
-            case ':': return Token(TokenType::COLON, lexeme, startLine, startColumn);
-            case ',': return Token(TokenType::COMMA, lexeme, startLine, startColumn);
-            case ';': return Token(TokenType::SEMICOLON, lexeme, startLine, startColumn);
-            case '-': return Token(TokenType::HYPHEN, lexeme, startLine, startColumn);
-            default:
-                if (errorManager) {
-                    errorManager->addError(lexeme, "Caracter ilegal", 
-                        "El caracter '" + string(1, c) + "' no es válido en el lenguaje",
-                        startLine, startColumn, ErrorSeverity::ERROR);
-                }
-                return Token(TokenType::ERROR, lexeme, startLine, startColumn);
-        }
-    }
-}
 
-Token LexicalAnalyzer::recognizeNumberOrDateTime() {
-    int startLine = line;
-    int startColumn = column;
-    string lexeme;
-    
-    // Leer la parte numérica inicial
-    while (!isEOF() && isdigit(currentChar)) {
-        lexeme += currentChar;
-        advance();
-    }
-    
-    // Verificar si es una fecha (YYYY-MM-DD)
-    if (currentChar == '-' && isdigit(peek())) {
-        // Es una fecha, leer el resto
-        lexeme += currentChar;
-        advance();
-        
-        // Leer mes
-        while (!isEOF() && isdigit(currentChar)) {
-            lexeme += currentChar;
-            advance();
-        }
-        
-        if (currentChar == '-' && isdigit(peek())) {
-            lexeme += currentChar;
-            advance();
-            
-            // Leer día
-            while (!isEOF() && isdigit(currentChar)) {
-                lexeme += currentChar;
-                advance();
-            }
-            
-            // Validar fecha
-            if (isValidDate(lexeme)) {
-                return Token(TokenType::DATE, lexeme, startLine, startColumn);
-            } else {
-                if (errorManager) {
-                    errorManager->addError(lexeme, "Fecha inválida", 
-                        "La fecha '" + lexeme + "' no es válida. Formato esperado: AAAA-MM-DD",
-                        startLine, startColumn, ErrorSeverity::ERROR);
-                }
-                return Token(TokenType::ERROR, lexeme, startLine, startColumn);
-            }
-        }
-    }
-    
-    // Verificar si es una hora (HH:MM)
-    if (currentChar == ':' && isdigit(peek())) {
-        lexeme += currentChar;
-        advance();
-        
-        // Leer minutos
-        while (!isEOF() && isdigit(currentChar)) {
-            lexeme += currentChar;
-            advance();
-        }
-        
-        // Validar hora
-        if (isValidTime(lexeme)) {
-            return Token(TokenType::TIME, lexeme, startLine, startColumn);
-        } else {
-            if (errorManager) {
-                errorManager->addError(lexeme, "Hora inválida", 
-                    "La hora '" + lexeme + "' no es válida. Formato esperado: HH:MM (00:00-23:59)",
-                    startLine, startColumn, ErrorSeverity::ERROR);
+        switch (c)
+        {
+        case '{':
+            return Token(TokenType::LBRACE, lexeme, startLine, startColumn);
+        case '}':
+            return Token(TokenType::RBRACE, lexeme, startLine, startColumn);
+        case '[':
+            return Token(TokenType::LBRACKET, lexeme, startLine, startColumn);
+        case ']':
+            return Token(TokenType::RBRACKET, lexeme, startLine, startColumn);
+        case ':':
+            return Token(TokenType::COLON, lexeme, startLine, startColumn);
+        case ',':
+            return Token(TokenType::COMMA, lexeme, startLine, startColumn);
+        case ';':
+            return Token(TokenType::SEMICOLON, lexeme, startLine, startColumn);
+        case '-':
+            return Token(TokenType::HYPHEN, lexeme, startLine, startColumn);
+        default:
+            if (errorManager)
+            {
+                errorManager->addError(lexeme, "Caracter ilegal",
+                                       "El caracter '" + string(1, c) + "' no es valido en el lenguaje",
+                                       startLine, startColumn, ErrorSeverity::ERROR);
             }
             return Token(TokenType::ERROR, lexeme, startLine, startColumn);
         }
     }
-    
-    // Es un número entero simple
-    return Token(TokenType::INTEGER, lexeme, startLine, startColumn);
 }
 
-Token LexicalAnalyzer::recognizeIdentifier() {
+Token LexicalAnalyzer::recognizeNumberOrDateTime()
+{
     int startLine = line;
     int startColumn = column;
     string lexeme;
-    
-    // Leer el identificador completo
-    while (!isEOF() && (isalnum(currentChar) || currentChar == '_')) {
+
+    while (!isEOF() && isdigit(currentChar))
+    {
         lexeme += currentChar;
         advance();
     }
-    
-    // Palabras reservadas del lenguaje
-    if (lexeme == "HOSPITAL") return Token(TokenType::HOSPITAL, lexeme, startLine, startColumn);
-    if (lexeme == "PACIENTES") return Token(TokenType::PACIENTES, lexeme, startLine, startColumn);
-    if (lexeme == "MEDICOS") return Token(TokenType::MEDICOS, lexeme, startLine, startColumn);
-    if (lexeme == "CITAS") return Token(TokenType::CITAS, lexeme, startLine, startColumn);
-    if (lexeme == "DIAGNOSTICOS") return Token(TokenType::DIAGNOSTICOS, lexeme, startLine, startColumn);
-    if (lexeme == "paciente") return Token(TokenType::PACIENTE, lexeme, startLine, startColumn);
-    if (lexeme == "medico") return Token(TokenType::MEDICO, lexeme, startLine, startColumn);
-    if (lexeme == "cita") return Token(TokenType::CITA, lexeme, startLine, startColumn);
-    if (lexeme == "diagnostico") return Token(TokenType::DIAGNOSTICO, lexeme, startLine, startColumn);
-    if (lexeme == "con") return Token(TokenType::CON, lexeme, startLine, startColumn);
-    
-    // Atributos comunes en el lenguaje médico
+
+    // Verificar fecha (YYYY-MM-DD) sin regex
+    if (currentChar == '-' && isdigit(peek()))
+    {
+        lexeme += currentChar;
+        advance();
+
+        while (!isEOF() && isdigit(currentChar))
+        {
+            lexeme += currentChar;
+            advance();
+        }
+
+        if (currentChar == '-' && isdigit(peek()))
+        {
+            lexeme += currentChar;
+            advance();
+
+            while (!isEOF() && isdigit(currentChar))
+            {
+                lexeme += currentChar;
+                advance();
+            }
+
+            if (isValidDate(lexeme))
+            {
+                return Token(TokenType::DATE, lexeme, startLine, startColumn);
+            }
+            else
+            {
+                if (errorManager)
+                {
+                    errorManager->addError(lexeme, "Fecha invalida",
+                                           "La fecha '" + lexeme + "' no es valida. Formato esperado: AAAA-MM-DD",
+                                           startLine, startColumn, ErrorSeverity::ERROR);
+                }
+                return Token(TokenType::ERROR, lexeme, startLine, startColumn);
+            }
+        }
+    }
+
+    // Verificar hora (HH:MM) sin regex
+    if (currentChar == ':' && isdigit(peek()))
+    {
+        lexeme += currentChar;
+        advance();
+
+        while (!isEOF() && isdigit(currentChar))
+        {
+            lexeme += currentChar;
+            advance();
+        }
+
+        if (isValidTime(lexeme))
+        {
+            return Token(TokenType::TIME, lexeme, startLine, startColumn);
+        }
+        else
+        {
+            if (errorManager)
+            {
+                errorManager->addError(lexeme, "Hora invalida",
+                                       "La hora '" + lexeme + "' no es valida. Formato esperado: HH:MM",
+                                       startLine, startColumn, ErrorSeverity::ERROR);
+            }
+            return Token(TokenType::ERROR, lexeme, startLine, startColumn);
+        }
+    }
+
+    return Token(TokenType::INTEGER, lexeme, startLine, startColumn);
+}
+
+Token LexicalAnalyzer::recognizeIdentifier()
+{
+    int startLine = line;
+    int startColumn = column;
+    string lexeme;
+
+    while (!isEOF() && (isalnum(currentChar) || currentChar == '_'))
+    {
+        lexeme += currentChar;
+        advance();
+    }
+
+    // Palabras reservadas
+    if (lexeme == "HOSPITAL")
+        return Token(TokenType::HOSPITAL, lexeme, startLine, startColumn);
+    if (lexeme == "PACIENTES")
+        return Token(TokenType::PACIENTES, lexeme, startLine, startColumn);
+    if (lexeme == "MEDICOS")
+        return Token(TokenType::MEDICOS, lexeme, startLine, startColumn);
+    if (lexeme == "CITAS")
+        return Token(TokenType::CITAS, lexeme, startLine, startColumn);
+    if (lexeme == "DIAGNOSTICOS")
+        return Token(TokenType::DIAGNOSTICOS, lexeme, startLine, startColumn);
+    if (lexeme == "paciente")
+        return Token(TokenType::PACIENTE, lexeme, startLine, startColumn);
+    if (lexeme == "medico")
+        return Token(TokenType::MEDICO, lexeme, startLine, startColumn);
+    if (lexeme == "cita")
+        return Token(TokenType::CITA, lexeme, startLine, startColumn);
+    if (lexeme == "diagnostico")
+        return Token(TokenType::DIAGNOSTICO, lexeme, startLine, startColumn);
+    if (lexeme == "con")
+        return Token(TokenType::CON, lexeme, startLine, startColumn);
+
+    // Atributos
     if (lexeme == "edad" || lexeme == "tipo_sangre" || lexeme == "especialidad" ||
         lexeme == "codigo" || lexeme == "fecha" || lexeme == "hora" ||
-        lexeme == "condicion" || lexeme == "medicamento" || lexeme == "dosis") {
+        lexeme == "condicion" || lexeme == "medicamento" || lexeme == "dosis")
+    {
         return Token(TokenType::ATRIBUTO, lexeme, startLine, startColumn);
     }
-    
-    // Verificar si es especialidad médica
-    if (isValidSpecialty(lexeme)) {
+
+    if (isValidSpecialty(lexeme))
+    {
         return Token(TokenType::ESPECIALIDAD, lexeme, startLine, startColumn);
     }
-    
-    // Verificar si es tipo de dosis
-    if (isValidDosis(lexeme)) {
+
+    if (isValidDosis(lexeme))
+    {
         return Token(TokenType::DOSIS, lexeme, startLine, startColumn);
     }
-    
-    // Verificar si es tipo de sangre
-    if (isValidBloodType(lexeme)) {
+
+    if (isValidBloodType(lexeme))
+    {
         return Token(TokenType::BLOOD_TYPE, lexeme, startLine, startColumn);
     }
-    
-    // Error: identificador no reconocido
-    if (errorManager) {
-        errorManager->addError(lexeme, "Token inválido", 
-            "El identificador '" + lexeme + "' no es reconocido",
-            startLine, startColumn, ErrorSeverity::ERROR);
+
+    if (errorManager)
+    {
+        errorManager->addError(lexeme, "Token invalido",
+                               "El identificador '" + lexeme + "' no es reconocido",
+                               startLine, startColumn, ErrorSeverity::ERROR);
     }
     return Token(TokenType::ERROR, lexeme, startLine, startColumn);
 }
@@ -290,7 +321,6 @@ Token LexicalAnalyzer::recognizeNumber()
     int startColumn = column;
     string lexeme;
 
-    // Leer el número completo
     while (!isEOF() && isdigit(currentChar))
     {
         lexeme += currentChar;
@@ -306,55 +336,72 @@ Token LexicalAnalyzer::recognizeString()
     int startColumn = column;
     string lexeme;
 
-    // Avanzar para saltar la comilla inicial
-    advance();
+    advance(); // Saltar comilla inicial
 
-    // Leer hasta encontrar la comilla de cierre
     while (!isEOF() && currentChar != '"')
     {
         lexeme += currentChar;
         advance();
     }
 
-    // Verificar si se encontró la comilla de cierre
     if (currentChar == '"')
     {
-        advance(); // Saltar la comilla de cierre
+        advance(); // Saltar comilla de cierre
+
+        // VALIDAR TIPO DE SANGRE
+        if (lexeme == "A+" || lexeme == "A-" || lexeme == "B+" || lexeme == "B-" ||
+            lexeme == "O+" || lexeme == "O-" || lexeme == "AB+" || lexeme == "AB-")
+        {
+            return Token(TokenType::BLOOD_TYPE, lexeme, startLine, startColumn);
+        }
+
+        // VALIDAR QUE NO SEA UN TIPO DE SANGRE INVÁLIDO
+        // Si tiene formato de tipo de sangre (una letra seguida de + o -) pero es inválido
+        if ((lexeme.length() == 2 || lexeme.length() == 3) &&
+            (lexeme.find('+') != string::npos || lexeme.find('-') != string::npos))
+        {
+            errorManager->addError(lexeme, "Tipo de sangre invalido",
+                                   "El valor '" + lexeme + "' no es un tipo de sangre valido. Valores validos: O+, O-, A+, A-, B+, B-, AB+, AB-",
+                                   startLine, startColumn, ErrorSeverity::ERROR);
+            return Token(TokenType::ERROR, lexeme, startLine, startColumn);
+        }
+
         return Token(TokenType::STRING, lexeme, startLine, startColumn);
     }
     else
     {
-        // Cadena sin cerrar
-        if (errorManager) {
-            errorManager->addError(lexeme, "Cadena sin cerrar",
-                                   "Se encontró el inicio de una cadena pero no se detectó el cierre",
-                                   startLine, startColumn, ErrorSeverity::CRITICAL);
-        }
+        errorManager->addError(lexeme, "Cadena sin cerrar",
+                               "Se encontro el inicio de una cadena pero no se detecto el cierre",
+                               startLine, startColumn, ErrorSeverity::CRITICAL);
         return Token(TokenType::ERROR, lexeme, startLine, startColumn);
     }
 }
-
 bool LexicalAnalyzer::isValidDate(const string &dateStr)
 {
-    // Implementar validación de fecha AAAA-MM-DD
-    regex dateRegex(R"(\d{4}-\d{2}-\d{2})");
-    if (!regex_match(dateStr, dateRegex))
+    // Validación manual sin regex
+    if (dateStr.length() != 10)
+        return false;
+    if (dateStr[4] != '-' || dateStr[7] != '-')
         return false;
 
-    // Extraer año, mes, día
+    for (int i = 0; i < 10; i++)
+    {
+        if (i == 4 || i == 7)
+            continue;
+        if (!isdigit(dateStr[i]))
+            return false;
+    }
+
     int year = stoi(dateStr.substr(0, 4));
     int month = stoi(dateStr.substr(5, 2));
     int day = stoi(dateStr.substr(8, 2));
 
-    // Validar mes
     if (month < 1 || month > 12)
         return false;
 
-    // Validar día según el mes
     int daysInMonth[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
     if (month == 2)
     {
-        // Verificar año bisiesto
         bool isLeap = (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0);
         if (isLeap)
             daysInMonth[1] = 29;
@@ -365,9 +412,19 @@ bool LexicalAnalyzer::isValidDate(const string &dateStr)
 
 bool LexicalAnalyzer::isValidTime(const string &timeStr)
 {
-    regex timeRegex(R"(\d{2}:\d{2})");
-    if (!regex_match(timeStr, timeRegex))
+    // Validación manual sin regex
+    if (timeStr.length() != 5)
         return false;
+    if (timeStr[2] != ':')
+        return false;
+
+    for (int i = 0; i < 5; i++)
+    {
+        if (i == 2)
+            continue;
+        if (!isdigit(timeStr[i]))
+            return false;
+    }
 
     int hour = stoi(timeStr.substr(0, 2));
     int minute = stoi(timeStr.substr(3, 2));

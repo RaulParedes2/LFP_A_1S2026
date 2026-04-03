@@ -1,0 +1,8 @@
+HOSPITAL {
+    PACIENTES {
+        paciente: "Ana" [edad: treinta, tipo_sangre: "X+Y", habitacion: 101]
+    }
+    MEDICOS {
+        medico: "Dr. Ruiz" [especialidad: PSICOLOGIA, codigo: MED-001]
+    }
+}

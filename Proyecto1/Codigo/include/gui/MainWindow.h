@@ -8,6 +8,9 @@
 #include <QLabel>
 #include <QSplitter>
 #include <QTabWidget>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QDir>
 #include "../core/LexicalAnalyzer.h"
 #include "../core/ErrorManager.h"
 #include "../reports/ReportGenerator.h"
@@ -21,6 +24,7 @@ public:
     ~MainWindow();
 
 private slots:
+
     void onLoadFile();
     void onAnalyze();
     void onClear();
@@ -30,7 +34,7 @@ private slots:
     void onViewReport4();
 
 private:
-    // Componentes de la GUI
+    bool isValidBloodType(const std::string& bloodType);
     QTextEdit *sourceCodeEditor;
     QTableWidget *tokenTable;
     QTableWidget *errorTable;
@@ -44,15 +48,12 @@ private:
     QPushButton *report4Button;
     QLabel *statusLabel;
     
-    // Componentes lógicos
     LexicalAnalyzer *lexer;
     ErrorManager *errorManager;
     ReportGenerator *reportGen;
     
-    // Archivo actual
     QString currentFile;
     
-    // Métodos auxiliares
     void setupUI();
     void setupConnections();
     void displayTokens(const std::vector<Token>& tokens);
@@ -60,6 +61,7 @@ private:
     void clearTables();
     void updateStatus(const QString& message, bool isError = false);
     void openReportInBrowser(const QString& reportFile);
+    void extractDataFromTokens(const std::vector<Token>& tokens);
 };
 
 #endif

@@ -539,114 +539,149 @@ string ReportGenerator::generateReport4()
     return html.str();
 }
 
-bool ReportGenerator::writeHTMLFile(const string &filename, const string &content)
+bool ReportGenerator::writeHTMLFile(const string& filename, const string& content)
 {
+    // Crear directorio si no existe
+    size_t lastSlash = filename.find_last_of("/\\");
+    if (lastSlash != string::npos) {
+        string dir = filename.substr(0, lastSlash);
+        string mkdirCmd = "mkdir \"" + dir + "\" 2>nul";
+        system(mkdirCmd.c_str());
+    }
+    
     ofstream file(filename);
-    if (!file.is_open())
-    {
+    if (!file.is_open()) {
         return false;
     }
     file << content;
     file.close();
     return true;
 }
-
 bool ReportGenerator::generateAllReports(const string &outputDir)
 {
     calculateStatistics();
 
+    // Asegurar que el directorio existe
     string dir = outputDir;
     if (!dir.empty() && dir.back() != '/' && dir.back() != '\\')
     {
         dir += "/";
     }
 
+    // Crear el directorio si no existe (usando comando del sistema)
+    string mkdirCmd = "mkdir " + dir + " 2>nul";
+    system(mkdirCmd.c_str());
+
     bool success = true;
-    success &= writeHTMLFile(dir + "reporte1_pacientes.html", generateReport1());
-    success &= writeHTMLFile(dir + "reporte2_medicos.html", generateReport2());
-    success &= writeHTMLFile(dir + "reporte3_citas.html", generateReport3());
-    success &= writeHTMLFile(dir + "reporte4_estadisticas.html", generateReport4());
+
+    string file1 = dir + "reporte1_pacientes.html";
+    string file2 = dir + "reporte2_medicos.html";
+    string file3 = dir + "reporte3_citas.html";
+    string file4 = dir + "reporte4_estadisticas.html";
+
+    success &= writeHTMLFile(file1, generateReport1());
+    success &= writeHTMLFile(file2, generateReport2());
+    success &= writeHTMLFile(file3, generateReport3());
+    success &= writeHTMLFile(file4, generateReport4());
 
     return success;
 }
 
-bool ReportGenerator::generateGraphviz(const string &filename)
+bool ReportGenerator::generateGraphviz(const string& filename)
 {
+    // Depuración
+    cout << "=== GENERANDO GRAPHVIZ ===" << endl;
+    cout << "Pacientes en reportGen: " << patients.size() << endl;
+    cout << "Medicos en reportGen: " << doctors.size() << endl;
+    cout << "Citas en reportGen: " << appointments.size() << endl;
+    
+    if (patients.empty() && doctors.empty() && appointments.empty()) {
+        cout << "ADVERTENCIA: No hay datos para generar el diagrama" << endl;
+    }
+    
+    // Asegurar que los datos están actualizados
+    calculateStatistics();
+    
     stringstream dot;
     dot << "digraph Hospital {\n";
     dot << "  rankdir=TB;\n";
     dot << "  node [shape=box, style=filled, fontname=\"Arial\"];\n\n";
-
+    
     dot << "  H [label=\"" << stats.name << "\", fillcolor=\"#1A4731\", fontcolor=white, shape=ellipse];\n";
     dot << "  P [label=\"PACIENTES\", fillcolor=\"#2E7D52\", fontcolor=white];\n";
     dot << "  M [label=\"MEDICOS\", fillcolor=\"#2E7D52\", fontcolor=white];\n";
     dot << "  C [label=\"CITAS\", fillcolor=\"#2E7D52\", fontcolor=white];\n";
     dot << "  D [label=\"DIAGNOSTICOS\", fillcolor=\"#2E7D52\", fontcolor=white];\n\n";
-
+    
     dot << "  H -> P; H -> M; H -> C; H -> D;\n\n";
-
+    
     // Nodos de pacientes
-    for (const auto &p : patients)
-    {
-        dot << "  p" << &p << " [label=\"" << p.name << "\\n"
-            << p.age << " años | " << p.bloodType << "\", fillcolor=\"#D4EDDA\"];\n";
-        dot << "  P -> p" << &p << ";\n";
+    for (const auto& p : patients) {
+        string nodeId = "p" + to_string(reinterpret_cast<uintptr_t>(&p));
+        string label = p.name + "\\n" + to_string(p.age) + " años | " + p.bloodType;
+        dot << "  " << nodeId << " [label=\"" << label << "\", fillcolor=\"#D4EDDA\"];\n";
+        dot << "  P -> " << nodeId << ";\n";
     }
     dot << "\n";
-
+    
     // Nodos de médicos
-    for (const auto &d : doctors)
-    {
-        dot << "  m" << &d << " [label=\"" << d.name << "\\n"
-            << d.code << " | " << d.specialty << "\", fillcolor=\"#D6EAF8\"];\n";
-        dot << "  M -> m" << &d << ";\n";
+    for (const auto& d : doctors) {
+        string nodeId = "m" + to_string(reinterpret_cast<uintptr_t>(&d));
+        string label = d.name + "\\n" + d.code + " | " + d.specialty;
+        dot << "  " << nodeId << " [label=\"" << label << "\", fillcolor=\"#D6EAF8\"];\n";
+        dot << "  M -> " << nodeId << ";\n";
     }
     dot << "\n";
-
+    
     // Conexiones de citas
-    for (const auto &a : appointments)
-    {
+    for (const auto& a : appointments) {
         // Buscar paciente y médico
-        for (const auto &p : patients)
-        {
-            if (p.name == a.patient)
-            {
-                for (const auto &d : doctors)
-                {
-                    if (d.name == a.doctor)
-                    {
-                        dot << "  p" << &p << " -> m" << &d << " [label=\"" << a.date << " " << a.time << "\", color=\"#E67E22\", style=dashed];\n";
-                        break;
-                    }
-                }
+        string patientId, doctorId;
+        for (const auto& p : patients) {
+            if (p.name == a.patient) {
+                patientId = "p" + to_string(reinterpret_cast<uintptr_t>(&p));
                 break;
             }
         }
-    }
-    dot << "\n";
-
-    // Diagnósticos
-    int diagNum = 1;
-    for (const auto &p : patients)
-    {
-        if (p.hasDiagnosis)
-        {
-            dot << "  d" << diagNum << " [label=\"" << p.diagnosis << "\\n"
-                << p.medication << " / " << p.dosis << "\", fillcolor=\"#FDEBD0\"];\n";
-            dot << "  D -> d" << diagNum << ";\n";
-            dot << "  d" << diagNum << " -> p" << &p << " [label=\"diagnóstico activo\", color=\"#C0392B\"];\n";
-            diagNum++;
+        for (const auto& d : doctors) {
+            if (d.name == a.doctor) {
+                doctorId = "m" + to_string(reinterpret_cast<uintptr_t>(&d));
+                break;
+            }
+        }
+        if (!patientId.empty() && !doctorId.empty()) {
+            dot << "  " << patientId << " -> " << doctorId 
+                << " [label=\"" << a.date << " " << a.time << "\", color=\"#E67E22\", style=dashed];\n";
         }
     }
-
+    dot << "\n";
+    
+    // Diagnósticos
+    int diagNum = 1;
+    for (const auto& p : patients) {
+        if (p.hasDiagnosis && !p.diagnosis.empty()) {
+            string nodeId = "d" + to_string(diagNum++);
+            string label = p.diagnosis + "\\n" + p.medication + " / " + p.dosis;
+            dot << "  " << nodeId << " [label=\"" << label << "\", fillcolor=\"#FDEBD0\"];\n";
+            dot << "  D -> " << nodeId << ";\n";
+            
+            string patientId = "p" + to_string(reinterpret_cast<uintptr_t>(&p));
+            dot << "  " << nodeId << " -> " << patientId 
+                << " [label=\"diagnostico activo\", color=\"#C0392B\"];\n";
+        }
+    }
+    
     dot << "}\n";
-
+    
+    // Escribir archivo
     ofstream file(filename);
-    if (!file.is_open())
-    {
+    if (!file.is_open()) {
+        cerr << "Error: No se pudo abrir " << filename << " para escribir" << endl;
         return false;
     }
     file << dot.str();
     file.close();
+    
+    cout << "Diagrama Graphviz generado: " << filename << endl;
     return true;
 }

@@ -1,0 +1,5 @@
+HOSPITAL {
+    CITAS {
+        cita: "Paciente" con "Medico" [fecha: 2025-04-10, hora: 25:00]
+    }
+}

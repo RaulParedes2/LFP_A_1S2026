@@ -1,0 +1,21 @@
+HOSPITAL {
+    PACIENTES {
+        paciente: "Ana Lopez" [edad: 34, tipo_sangre: "O+"],
+        paciente: "Carlos Mendoza" [edad: 62, tipo_sangre: "O-"],
+        paciente: "Maria Garcia" [edad: 45, tipo_sangre: "A+"]
+    }
+    MEDICOS {
+        medico: "Dr. Roberto Juarez" [especialidad: CARDIOLOGIA, codigo: "MED-001"],
+        medico: "Dra. Ana Solis" [especialidad: NEUROLOGIA, codigo: "MED-002"],
+        medico: "Dr. Luis Herrera" [especialidad: PEDIATRIA, codigo: "MED-003"]
+    }
+    CITAS {
+        cita: "Ana Lopez" con "Dr. Roberto Juarez" [fecha: 2025-04-10, hora: 09:00],
+        cita: "Carlos Mendoza" con "Dr. Roberto Juarez" [fecha: 2025-04-10, hora: 09:00],
+        cita: "Maria Garcia" con "Dra. Ana Solis" [fecha: 2025-04-10, hora: 11:30]
+    }
+    DIAGNOSTICOS {
+        diagnostico: "Ana Lopez" [condicion: "Hipertension Arterial", medicamento: "Losartan 50mg", dosis: DIARIA],
+        diagnostico: "Carlos Mendoza" [condicion: "Diabetes Tipo 2", medicamento: "Metformina 850mg", dosis: CADA_12_HORAS]
+    }
+}

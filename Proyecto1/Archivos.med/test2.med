@@ -1,0 +1,5 @@
+HOSPITAL {
+    PACIENTES {
+        paciente: "Juan Perez" [edad: 30, tipo_sangre: "A+", habitacion: 101]
+    }
+}

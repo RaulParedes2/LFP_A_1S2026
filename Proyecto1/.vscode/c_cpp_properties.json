@@ -3,11 +3,11 @@
         {
             "name": "Win32",
             "includePath": [
-                "${workspaceFolder}/include/**",
+                "${workspaceFolder}/include",
                 "${workspaceFolder}/include/core",
                 "${workspaceFolder}/include/reports",
                 "${workspaceFolder}/include/gui",
-                "C:/Qt/6.11.0/mingw_64/include/**",
+                "C:/Qt/6.11.0/mingw_64/include",
                 "C:/Qt/6.11.0/mingw_64/include/QtCore",
                 "C:/Qt/6.11.0/mingw_64/include/QtWidgets",
                 "C:/Qt/6.11.0/mingw_64/include/QtGui"
@@ -23,10 +23,7 @@
             "compilerPath": "C:/msys64/ucrt64/bin/g++.exe",
             "cStandard": "c17",
             "cppStandard": "c++17",
-            "intelliSenseMode": "windows-gcc-x64",
-            "compilerArgs": [
-                "-std=c++17"
-            ]
+            "intelliSenseMode": "windows-gcc-x64"
         }
     ],
     "version": 4

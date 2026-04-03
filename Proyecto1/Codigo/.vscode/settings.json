@@ -1,13 +1,31 @@
 {
     "C_Cpp.default.cppStandard": "c++17",
-    "C_Cpp.default.compilerPath": "g++",
+    "C_Cpp.default.compilerPath": "C:/msys64/ucrt64/bin/g++.exe",
+    "C_Cpp.default.includePath": [
+        "${workspaceFolder}/include/**",
+        "C:/Qt/6.11.0/mingw_64/include/**"
+    ],
+    "C_Cpp.errorSquiggles": "enabled",
+    "C_Cpp.intelliSenseEngine": "default",
     "files.associations": {
         "*.h": "cpp",
-        "*.cpp": "cpp"
+        "*.cpp": "cpp",
+        "*.hpp": "cpp",
+        "qapplication": "cpp",
+        "qpushbutton": "cpp",
+        "qtextedit": "cpp",
+        "qtablewidget": "cpp",
+        "qlabel": "cpp",
+        "qsplitter": "cpp",
+        "qtabwidget": "cpp",
+        "qfiledialog": "cpp",
+        "qmessagebox": "cpp",
+        "qdesktopservices": "cpp",
+        "qurl": "cpp",
+        "qfile": "cpp",
+        "qtextstream": "cpp"
     },
     "code-runner.executorMap": {
-        "cpp": "cd $dir && g++ -std=c++17 $fileName -o $fileNameWithoutExt && $dir$fileNameWithoutExt"
-    },
-    "code-runner.runInTerminal": true,
-    "code-runner.clearPreviousOutput": true
+        "cpp": "cd $dir && g++ -std=c++17 -I${workspaceFolder}/include -I C:/Qt/6.8.0/mingw_64/include -I C:/Qt/6.8.0/mingw_64/include/QtCore -I C:/Qt/6.8.0/mingw_64/include/QtWidgets -I C:/Qt/6.8.0/mingw_64/include/QtGui $fileName -o $fileNameWithoutExt.exe && $dir$fileNameWithoutExt.exe"
+    }
 }

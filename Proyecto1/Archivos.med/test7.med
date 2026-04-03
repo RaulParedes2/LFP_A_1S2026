@@ -1,0 +1,5 @@
+HOSPITAL {
+    MEDICOS {
+        medico: "Dr. Smith" [especialidad: PSICOLOGIA, codigo: "MED-001"]
+    }
+}

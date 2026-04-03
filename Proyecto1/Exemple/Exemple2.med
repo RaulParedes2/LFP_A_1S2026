@@ -1,0 +1,18 @@
+HOSPITAL {
+    PACIENTES {
+        paciente: "Sofia Ramirez" [edad: 8, tipo_sangre: "B+"],
+        paciente: "Mateo Gomez" [edad: 5, tipo_sangre: "AB-"]
+    }
+    MEDICOS {
+        medico: "Dr. Pablo Morales" [especialidad: PEDIATRIA, codigo: "MED-004"],
+        medico: "Dra. Laura Castro" [especialidad: CIRUGIA, codigo: "MED-005"]
+    }
+    CITAS {
+        cita: "Sofia Ramirez" con "Dr. Pablo Morales" [fecha: 2025-05-15, hora: 10:00],
+        cita: "Mateo Gomez" con "Dra. Laura Castro" [fecha: 2025-05-16, hora: 14:30]
+    }
+    DIAGNOSTICOS {
+        diagnostico: "Sofia Ramirez" [condicion: "Faringitis", medicamento: "Amoxicilina", dosis: CADA_8_HORAS],
+        diagnostico: "Mateo Gomez" [condicion: "Apendicitis", medicamento: "Ibuprofeno", dosis: DIARIA]
+    }
+}

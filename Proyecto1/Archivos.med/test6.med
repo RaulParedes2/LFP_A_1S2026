@@ -1,0 +1,5 @@
+HOSPITAL {
+    PACIENTES {
+        paciente: "Ana Lopez [edad: 34]
+    }
+}
