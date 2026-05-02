@@ -36,7 +36,8 @@ namespace TaskScript
         currentPos = 0;
         line = 1;
         column = 1;
-        tokens.clear();
+        /*
+        tokens.clear();*/   // No se limpian los tokens para permitir generar reportes incluso si hay errores
     }
 
     char LexicalAnalyzer::peek() const

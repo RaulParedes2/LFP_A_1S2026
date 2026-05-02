@@ -48,6 +48,7 @@ namespace TaskScript
     class Token
     {
     public:
+        Token();
         Token(TokenType type, const string& lexeme, int line, int column);
         // Getters (constantes correctos)
         TokenType getType() const;
