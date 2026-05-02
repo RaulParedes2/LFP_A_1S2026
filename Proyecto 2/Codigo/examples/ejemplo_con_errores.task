@@ -1,0 +1,10 @@
+TABLERO "Proyecto con Errores" {
+  COLUMNA "Errores Lexicos" {
+    tarea: "Token invalido" [prioridad: ALTA, responsable: "Juan", fecha_limite: 2026-05-01],
+    tarea: "Caracter raro" [prioridad: $MEDIA, responsable: "Ana", fecha_limite: 2026-05-02],
+    tarea: "Cadena sin cerrar [prioridad: BAJA, responsable: "Pedro]
+  };
+  COLUMNA "Errores Sintacticos" {
+    tarea: "Falta corchete" [prioridad: ALTA, responsable: "Luis", fecha_limite 2026-05-03],
+    tarea: "Prioridad invalida" [prioridad: ULTRA, responsable: "Maria", fecha_limite: 2026-05-04]
+  };
