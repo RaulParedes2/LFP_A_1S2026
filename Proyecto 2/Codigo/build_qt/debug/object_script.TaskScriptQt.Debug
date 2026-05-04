@@ -1,0 +1,10 @@
+debug/Token.o
+debug/LexicalAnalyzer.o
+debug/Error.o
+debug/ErrorManager.o
+debug/ASTNode.o
+debug/SyntaxAnalyzer.o
+debug/ReportGenerator.o
+debug/MainWindow.o
+debug/main.o
+debug/moc_MainWindow.o

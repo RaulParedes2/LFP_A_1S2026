@@ -1,0 +1,10 @@
+release/Token.o
+release/LexicalAnalyzer.o
+release/Error.o
+release/ErrorManager.o
+release/ASTNode.o
+release/SyntaxAnalyzer.o
+release/ReportGenerator.o
+release/MainWindow.o
+release/main.o
+release/moc_MainWindow.o

@@ -1,0 +1,25 @@
+{
+  "tokens": [
+    {"no": 1, "lexeme": "TABLERO", "type": "TABLERO", "line": 1, "column": 1},
+    {"no": 2, "lexeme": "Mini", "type": "CADENA", "line": 1, "column": 9},
+    {"no": 3, "lexeme": "{", "type": "LLAVE_ABRE", "line": 1, "column": 16},
+    {"no": 4, "lexeme": "COLUMNA", "type": "COLUMNA", "line": 2, "column": 3},
+    {"no": 5, "lexeme": "A", "type": "CADENA", "line": 2, "column": 11},
+    {"no": 6, "lexeme": "{", "type": "LLAVE_ABRE", "line": 2, "column": 15},
+    {"no": 7, "lexeme": "tarea", "type": "TAREA", "line": 3, "column": 5},
+    {"no": 8, "lexeme": ":", "type": "DOS_PUNTOS", "line": 3, "column": 10},
+    {"no": 9, "lexeme": "X", "type": "CADENA", "line": 3, "column": 12},
+    {"no": 10, "lexeme": "[", "type": "CORCHETE_ABRE", "line": 3, "column": 16},
+    {"no": 11, "lexeme": "prioridad", "type": "PRIORIDAD", "line": 3, "column": 17},
+    {"no": 12, "lexeme": ":", "type": "DOS_PUNTOS", "line": 3, "column": 26},
+    {"no": 13, "lexeme": "ALTA", "type": "ALTA", "line": 3, "column": 28},
+    {"no": 14, "lexeme": "]", "type": "CORCHETE_CIERRA", "line": 3, "column": 32},
+    {"no": 15, "lexeme": "}", "type": "LLAVE_CIERRA", "line": 4, "column": 3},
+    {"no": 16, "lexeme": ";", "type": "PUNTO_Y_COMA", "line": 4, "column": 4},
+    {"no": 17, "lexeme": "}", "type": "LLAVE_CIERRA", "line": 5, "column": 1},
+    {"no": 18, "lexeme": ";", "type": "PUNTO_Y_COMA", "line": 5, "column": 2}
+  ],
+  "errors": [
+  ],
+  "dotCode": "digraph ArbolDerivacion {\n  rankdir=TB;\n  node [fontname=\"Arial\", fontsize=10];\n  edge [arrowhead=normal];\n\n  node0 [shape=ellipse, style=filled, fillcolor=\"#87CEEB\", label=\"programa\"];\n  node1 [shape=box, style=filled, fillcolor=\"#90EE90\", label=\"CADENA\\nMini\"];\n  node0 -> node1;\n  node2 [shape=box, style=filled, fillcolor=\"#90EE90\", label=\"CADENA\\nMini\"];\n  node0 -> node2;\n  node3 [shape=ellipse, style=filled, fillcolor=\"#87CEEB\", label=\"columnas\"];\n  node4 [shape=ellipse, style=filled, fillcolor=\"#87CEEB\", label=\"columna\"];\n  node5 [shape=box, style=filled, fillcolor=\"#90EE90\", label=\"CADENA\\nA\"];\n  node4 -> node5;\n  node6 [shape=box, style=filled, fillcolor=\"#90EE90\", label=\"CADENA\\nA\"];\n  node4 -> node6;\n  node7 [shape=ellipse, style=filled, fillcolor=\"#87CEEB\", label=\"tareas\"];\n  node8 [shape=ellipse, style=filled, fillcolor=\"#87CEEB\", label=\"tarea\"];\n  node9 [shape=box, style=filled, fillcolor=\"#90EE90\", label=\"DOS_PUNTOS\\n:\"];\n  node8 -> node9;\n  node10 [shape=box, style=filled, fillcolor=\"#90EE90\", label=\"CADENA\\nX\"];\n  node8 -> node10;\n  node11 [shape=box, style=filled, fillcolor=\"#90EE90\", label=\"CORCHETE_ABRE\\n[\"];\n  node8 -> node11;\n  node12 [shape=ellipse, style=filled, fillcolor=\"#87CEEB\", label=\"atributos\"];\n  node13 [shape=ellipse, style=filled, fillcolor=\"#87CEEB\", label=\"atributo\"];\n  node14 [shape=box, style=filled, fillcolor=\"#90EE90\", label=\"PRIORIDAD\\nprioridad\"];\n  node13 -> node14;\n  node15 [shape=ellipse, style=filled, fillcolor=\"#87CEEB\", label=\"prioridad\"];\n  node16 [shape=box, style=filled, fillcolor=\"#90EE90\", label=\"ALTA\\nALTA\"];\n  node15 -> node16;\n  node13 -> node15;\n  node12 -> node13;\n  node8 -> node12;\n  node7 -> node8;\n  node4 -> node7;\n  node3 -> node4;\n  node0 -> node3;\n}\n"
+}

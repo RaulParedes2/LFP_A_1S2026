@@ -1,0 +1,5 @@
+TABLERO "Test" {
+  COLUMNA "Col1" {
+    tarea: "Tarea1" [prioridad: ALTA]
+  };
+};

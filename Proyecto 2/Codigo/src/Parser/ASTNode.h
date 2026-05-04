@@ -6,50 +6,42 @@
 #include <memory>
 #include <string>
 
-namespace TaskScript
-{
+namespace TaskScript {
 
-    class ASTNode
-    {
-    private:
-        std::string name;
-        Token token;
-        bool isTerminal;
-        std::vector<std::unique_ptr<ASTNode>> children;
-
-        // Variable estatica para el contador de nodos en toGraphViz
-        static int dotNodeCounter;
-
-    public:
-        explicit ASTNode(const std::string &productionName);
-        explicit ASTNode(const Token &token);
-        ASTNode(const std::string &name, const Token &token);
-
-        // Movimiento
-        ASTNode(ASTNode &&other) noexcept;
-        ASTNode &operator=(ASTNode &&other) noexcept;
-
-        // Eliminar copia
-        ASTNode(const ASTNode &) = delete;
-        ASTNode &operator=(const ASTNode &) = delete;
-
-        // Getters
-        const std::string &getName() const;
-        const Token &getToken() const;
-        bool getIsTerminal() const;
-        const std::vector<std::unique_ptr<ASTNode>> &getChildren() const;
-
-        // Metodos
-        void addChild(std::unique_ptr<ASTNode> child);
-        void addChild(ASTNode *child);
-
-        std::string toGraphViz() const;
-        void printTree(int depth = 0) const;
-        int getNodeCount() const;
-
-        // Metodo estatico para resetear el contador de DOT
-        static void resetDotCounter();
-    };
+class ASTNode {
+private:
+    std::string name;
+    Token token;
+    bool isTerminal;
+    std::vector<std::unique_ptr<ASTNode>> children;
+    
+public:
+    explicit ASTNode(const std::string& productionName);
+    explicit ASTNode(const Token& token);
+    ASTNode(const std::string& name, const Token& token);
+    
+    ~ASTNode() = default;
+    
+    ASTNode(ASTNode&& other) noexcept;
+    ASTNode& operator=(ASTNode&& other) noexcept;
+    
+    ASTNode(const ASTNode&) = delete;
+    ASTNode& operator=(const ASTNode&) = delete;
+    
+    const std::string& getName() const;
+    const Token& getToken() const;
+    bool getIsTerminal() const;
+    const std::vector<std::unique_ptr<ASTNode>>& getChildren() const;
+    
+    void addChild(std::unique_ptr<ASTNode> child);
+    void addChild(ASTNode* child);
+    
+    std::string toGraphViz(int& nodeCounter) const;
+    void printTree(int depth = 0) const;
+    int getNodeCount() const;
+    
+    static void resetDotCounter();
+};
 
 } // namespace TaskScript
 

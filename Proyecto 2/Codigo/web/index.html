@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskScript - Analizador de Lenguajes Formales</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>TaskScript</h1>
+            <p>Analizador Léxico y Sintáctico - Lenguajes Formales y Programación</p>
+        </header>
+
+        <div class="main-content">
+            <!-- Panel izquierdo: Editor -->
+            <div class="editor-panel">
+                <div class="panel-header">
+                    <h2>Código Fuente TaskScript</h2>
+                    <div class="button-group">
+                        <!-- Asegúrate que el botón tenga id="btnLoad" -->
+                        <button id="btnLoad" class="btn btn-primary">Cargar Archivo</button>
+                        <input type="file" id="fileInput" accept=".task" style="display: none;">
+                        <button id="btnAnalyze" class="btn btn-success">Analizar</button>
+                        <button id="btnClear" class="btn btn-warning">Limpiar</button>
+                    </div>
+                </div>
+                <textarea id="editor" placeholder="Escribe o pega código TaskScript aquí..."></textarea>
+                <input type="file" id="fileInput" accept=".task" style="display: none;">
+            </div>
+
+            <!-- Panel derecho: Resultados -->
+            <div class="results-panel">
+                <div class="tabs">
+                    <button class="tab-btn active" data-tab="tokens">Tabla de Tokens</button>
+                    <button class="tab-btn" data-tab="errors">Tabla de Errores</button>
+                    <button class="tab-btn" data-tab="dot">Código DOT</button>
+                    <button class="tab-btn" data-tab="reports">Reportes HTML</button>
+                </div>
+
+                <!-- Tabla de Tokens -->
+                <div id="tab-tokens" class="tab-content active">
+                    <div class="table-container">
+                        <table id="tokenTable">
+                            <thead>
+                                <tr><th>No.</th><th>Lexema</th><th>Tipo</th><th>Línea</th><th>Columna</th></tr>
+                            </thead>
+                            <tbody id="tokenBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Tabla de Errores -->
+                <div id="tab-errors" class="tab-content">
+                    <div class="table-container">
+                        <table id="errorTable">
+                            <thead>
+                                <tr><th>No.</th><th>Lexema</th><th>Tipo</th><th>Descripción</th><th>Línea</th><th>Columna</th><th>Gravedad</th></tr>
+                            </thead>
+                            <tbody id="errorBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Código DOT -->
+                <div id="tab-dot" class="tab-content">
+                    <div class="dot-controls">
+                        <button id="btnSaveDot" class="btn btn-secondary">Guardar DOT</button>
+                        <button id="btnViewGraph" class="btn btn-secondary">Ver Gráfico</button>
+                    </div>
+                    <pre id="dotCode" class="code-block"></pre>
+                </div>
+
+                <!-- Reportes HTML -->
+                <div id="tab-reports" class="tab-content">
+                    <div class="reports-info">
+                        <p>Los reportes HTML se generan automáticamente después del análisis.</p>
+                        <div class="button-group">
+                            <button id="btnKanban" class="btn btn-info">Tablero Kanban</button>
+                            <button id="btnResponsable" class="btn btn-info">Carga por Responsable</button>
+                            <button id="btnTokens" class="btn btn-info">Tabla de Tokens</button>
+                        </div>
+                    </div>
+                    <div id="reportPreview" class="report-preview">
+                        <iframe id="reportFrame" class="report-frame"></iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <div class="status-bar" id="statusBar">Listo. Cargue un archivo .task para comenzar.</div>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

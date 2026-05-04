@@ -4,6 +4,9 @@ using namespace std;
 
 namespace TaskScript
 {
+    Token::Token()
+    : type(TokenType::DESCONOCIDO), lexeme(""), line(0), column(0) {}
+    
     Token::Token(TokenType type, const string &lexeme, int line, int column)
         : type(type), lexeme(lexeme), line(line), column(column) {}
 

@@ -13,53 +13,45 @@ using namespace std;
 namespace TaskScript
 {
 
-    // Analizador sintactico implementado con parser descendente recursivo
-    // Cada no-terminal de la gramatica tiene su propio metodo
-
     class SyntaxAnalyzer
     {
         private:
-        LexicalAnalyzer& lexer;   // Referencia al analizador lexico
-        ErrorManager& errors;     // Referencia al manejador de errores
-        Token currentToken;       // Token actual siendo analizado
-        unique_ptr<ASTNode> root; // Raiz del arbol de sintaxis abstracta
-        bool hasSyntacticError;      // Bandera para indicar si se encontro un error sintactico
+        LexicalAnalyzer& lexer;
+        ErrorManager& errors;
+        Token currentToken;
+        unique_ptr<ASTNode> root;
+        bool hasSyntacticError;
 
-        // Metodos auxiliares para manejo de tokens
-        void advance();                                                    // Avanza al siguiente token
-        bool check(TokenType type) const;                                  // Verifica si el token actual es de cierto tipo
-        bool match(TokenType type);                                        // Verifica y consume si coincide
-        void consume(TokenType expected, const std::string &errorMessage); // Consume o reporta error
+        void advance();
+        bool check(TokenType type) const;
+        bool match(TokenType type);
+        void consume(TokenType expected, const std::string &errorMessage);
+        Token peek() const;
 
-        Token peek() const; // Retorna el token actual sin consumir
-
-        // Metodos de sincronizacion para recuperacion de errores
         void synchronize(const std::vector<TokenType> &syncTokens);
         void synchronizeToNextValid();
 
-        // Metodos para cada produccion de la gramatica (parser recursivo)
-        unique_ptr<ASTNode> parsePrograma();   // <programa>
-        unique_ptr<ASTNode> parseColumnas();   // <columnas>
-        unique_ptr<ASTNode> parseColumna();   // <columna>
-        unique_ptr<ASTNode> parseTareas();     // <tareas>
-        unique_ptr<ASTNode> parseTarea();      // <tarea>
-        unique_ptr<ASTNode> parseAtributos();  // <atributos>
-        unique_ptr<ASTNode> parseAtributo();   // <atributo>
-        unique_ptr<ASTNode> parsePrioridad(); // <prioridad>
+        unique_ptr<ASTNode> parsePrograma();
+        unique_ptr<ASTNode> parseColumnas();
+        unique_ptr<ASTNode> parseColumna();
+        unique_ptr<ASTNode> parseTareas();
+        unique_ptr<ASTNode> parseTarea();
+        unique_ptr<ASTNode> parseAtributos();
+        unique_ptr<ASTNode> parseAtributo();
+        unique_ptr<ASTNode> parsePrioridad();
 
     public:
         SyntaxAnalyzer(LexicalAnalyzer &lexer, ErrorManager &errors);
-        // Inicia el proceso de parsing y retorna la raiz del arbol de derivacion
+        
+        // El parse retorna el arbol pero NO mueve root
         unique_ptr<ASTNode> parse();
-
-        // Verifica si el analisis fue exitoso (sin errores sintacticos)
+        
+        // Metodo para obtener el arbol sin moverlo
+        ASTNode* getAST() const { return root.get(); }
+        
         bool isSuccessful() const;
-
-        // Genera el codigo DOT para Graphviz del arbol de derivacion
         string generateDotCode() const;
-
-        // Reinicia el analizador
         void reset();
     };
 }
-#endif // SYNTAX_ANALYZER_H
+#endif

@@ -6,8 +6,76 @@
 #include <iostream>
 #include <iomanip>
 #include <fstream>
+#include <sstream>
 
 using namespace TaskScript;
+
+// Función para escapar cadenas JSON
+std::string escapeJson(const std::string& str) {
+    std::stringstream ss;
+    for (char c : str) {
+        switch (c) {
+            case '"': ss << "\\\""; break;
+            case '\\': ss << "\\\\"; break;
+            case '\n': ss << "\\n"; break;
+            case '\r': ss << "\\r"; break;
+            case '\t': ss << "\\t"; break;
+            default: ss << c; break;
+        }
+    }
+    return ss.str();
+}
+
+// Generar archivo JSON con resultados
+void generateJsonReport(const std::vector<Token>& tokens, 
+                        const ErrorManager& errors,
+                        const std::string& filename,
+                        const std::string& dotCode) {
+    std::ofstream jsonFile(filename);
+    if (!jsonFile.is_open()) return;
+    
+    jsonFile << "{\n";
+    jsonFile << "  \"tokens\": [\n";
+    
+    for (size_t i = 0; i < tokens.size(); i++) {
+        const auto& token = tokens[i];
+        jsonFile << "    {";
+        jsonFile << "\"no\": " << (i + 1) << ", ";
+        jsonFile << "\"lexeme\": \"" << escapeJson(token.getLexeme()) << "\", ";
+        jsonFile << "\"type\": \"" << token.typeToString() << "\", ";
+        jsonFile << "\"line\": " << token.getLine() << ", ";
+        jsonFile << "\"column\": " << token.getColumn();
+        jsonFile << "}";
+        if (i < tokens.size() - 1) jsonFile << ",";
+        jsonFile << "\n";
+    }
+    
+    jsonFile << "  ],\n";
+    jsonFile << "  \"errors\": [\n";
+    
+    const auto& errorList = errors.getAllErrors();
+    for (size_t i = 0; i < errorList.size(); i++) {
+        const auto& error = errorList[i];
+        jsonFile << "    {";
+        jsonFile << "\"no\": " << error.getId() << ", ";
+        jsonFile << "\"lexeme\": \"" << escapeJson(error.getLexeme()) << "\", ";
+        jsonFile << "\"type\": \"" << error.getTypeString() << "\", ";
+        jsonFile << "\"description\": \"" << escapeJson(error.getDescription()) << "\", ";
+        jsonFile << "\"line\": " << error.getLine() << ", ";
+        jsonFile << "\"column\": " << error.getColumn() << ", ";
+        jsonFile << "\"severity\": \"" << error.getSeverityString() << "\"";
+        jsonFile << "}";
+        if (i < errorList.size() - 1) jsonFile << ",";
+        jsonFile << "\n";
+    }
+    
+    jsonFile << "  ],\n";
+    jsonFile << "  \"dotCode\": \"" << escapeJson(dotCode) << "\"\n";
+    jsonFile << "}\n";
+    
+    jsonFile.close();
+    std::cout << "JSON guardado: " << filename << std::endl;
+}
 
 void printTokenTable(const std::vector<Token>& tokens) {
     std::cout << "\n=== TABLA DE TOKENS ===\n";
@@ -25,7 +93,6 @@ void printTokenTable(const std::vector<Token>& tokens) {
         if (token.getType() == TokenType::FIN_DE_ARCHIVO) continue;
         
         std::string lexeme = token.getLexeme();
-        // Limitar longitud para mejor visualizacion
         if (lexeme.length() > 30) lexeme = lexeme.substr(0, 27) + "...";
         
         std::cout << std::left
@@ -84,12 +151,11 @@ void saveDotFile(const std::string& filename, const std::string& dotCode) {
 int main(int argc, char* argv[]) {
     std::cout << "========================================\n";
     std::cout << "   ANALIZADOR TASKSCRIPT - PROYECTO 2   \n";
-    std::cout << "   Lenguajes Formales y Programacion    \n";
     std::cout << "========================================\n\n";
     
     if (argc < 2) {
         std::cout << "Uso: " << argv[0] << " <archivo.task> [nombre_reporte]\n";
-        std::cout << "Ejemplo: " << argv[0] << " examples\\ejemplo_valido.task\n";
+        std::cout << "Ejemplo: " << argv[0] << " examples/Archivo_Correcto.task\n";
         return 1;
     }
     
@@ -128,8 +194,7 @@ int main(int argc, char* argv[]) {
     // 4. Realizar analisis sintactico
     std::cout << "--- ANALISIS SINTACTICO ---\n";
     
-    // IMPORTANTE: Crear NUEVO manejador de errores para el parser
-    // o limpiar el existente
+    // Crear nuevo manejador de errores para el parser
     ErrorManager syntaxErrors;
     
     // Reiniciar el lexer para empezar desde el principio
@@ -140,7 +205,8 @@ int main(int argc, char* argv[]) {
     
     auto ast = parser.parse();
     
-    if (ast && parser.isSuccessful()) {
+    // Verificar el resultado
+    if (ast != nullptr) {
         std::cout << "Analisis sintactico completado exitosamente.\n";
         std::cout << "Arbol de derivacion generado con " << ast->getNodeCount() << " nodos.\n\n";
         
@@ -169,12 +235,19 @@ int main(int argc, char* argv[]) {
         std::string dotCode = parser.generateDotCode();
         saveDotFile(reportBase + "_arbol.dot", dotCode);
         
+        // 7. Generar archivo JSON para la interfaz web
+        generateJsonReport(tokens, syntaxErrors, "resultados.json", dotCode);
+        
         std::cout << "\nPara generar la imagen del arbol con Graphviz:\n";
         std::cout << "  dot -Tpng " << reportBase << "_arbol.dot -o " << reportBase << "_arbol.png\n";
+        std::cout << "\nPara ver la interfaz web, abra web/index.html en su navegador.\n";
         
     } else {
         std::cout << "Analisis sintactico fallido debido a errores.\n";
         printErrorTable(syntaxErrors);
+        
+        // Generar JSON incluso si hay errores
+        generateJsonReport(tokens, syntaxErrors, "resultados.json", "");
     }
     
     // 7. Mostrar resumen final

@@ -1,353 +1,295 @@
 #include "LexicalAnalyzer.h"
 #include <cctype>
 #include <algorithm>
+#include <fstream>
+#include <iostream>
 
-using namespace std;
+namespace TaskScript {
 
-namespace TaskScript
-{
+LexicalAnalyzer::LexicalAnalyzer(ErrorManager& errorManager)
+    : currentPos(0), line(1), column(1), errors(errorManager) {}
 
-    LexicalAnalyzer::LexicalAnalyzer(ErrorManager &errorManager)
-        : currentPos(0), line(1), column(1), errors(errorManager) {}
-
-    bool LexicalAnalyzer::loadFile(const string &filename)
-    {
-        ifstream file(filename);
-        if (!file.is_open())
-        {
-            errors.addError(filename, ErrorType::LEXICO,
-                            "No se pudo abrir el archivo" + filename,
-                            0, 0, ErrorSeverity::CRITICO);
-            return false;
-        }
-
-        // Leer todo el contenido del archivo
-        sourceCode = string((istreambuf_iterator<char>(file)),
-                            istreambuf_iterator<char>());
-
-        file.close();
-
-        this->filename = filename;
-        reset(); // Reiniciar el analizador para el nuevo archivo
-        return true;
+bool LexicalAnalyzer::loadFile(const std::string& filename) {
+    std::ifstream file(filename, std::ios::binary);
+    
+    if (!file.is_open()) {
+        errors.addError(filename, ErrorType::LEXICO_ERROR,
+                       "No se pudo abrir el archivo: " + filename,
+                       0, 0, ErrorSeverity::CRITICO_ERROR);
+        return false;
     }
-    void LexicalAnalyzer::reset()
-    {
-        currentPos = 0;
-        line = 1;
+    
+    // Leer todo el contenido
+    sourceCode = std::string((std::istreambuf_iterator<char>(file)),
+                              std::istreambuf_iterator<char>());
+    file.close();
+    
+    // Eliminar BOM de UTF-8 si existe
+    if (sourceCode.length() >= 3 && 
+        (unsigned char)sourceCode[0] == 0xEF &&
+        (unsigned char)sourceCode[1] == 0xBB &&
+        (unsigned char)sourceCode[2] == 0xBF) {
+        sourceCode = sourceCode.substr(3);
+        std::cout << "BOM eliminado" << std::endl;
+    }
+    
+    // Normalizar saltos de linea: CRLF -> LF, CR -> LF
+    std::string normalized;
+    for (size_t i = 0; i < sourceCode.length(); i++) {
+        if (sourceCode[i] == '\r') {
+            normalized += '\n';
+            if (i + 1 < sourceCode.length() && sourceCode[i + 1] == '\n') {
+                i++;
+            }
+        } else {
+            normalized += sourceCode[i];
+        }
+    }
+    sourceCode = normalized;
+    
+    this->filename = filename;
+    reset();
+    
+    std::cout << "Archivo cargado: " << sourceCode.length() << " caracteres" << std::endl;
+    return true;
+}
+
+void LexicalAnalyzer::reset() {
+    currentPos = 0;
+    line = 1;
+    column = 1;
+    tokens.clear();
+}
+
+char LexicalAnalyzer::peek() const {
+    if (isAtEnd()) return '\0';
+    return sourceCode[currentPos];
+}
+
+char LexicalAnalyzer::peekNext() const {
+    if (currentPos + 1 >= sourceCode.length()) return '\0';
+    return sourceCode[currentPos + 1];
+}
+
+char LexicalAnalyzer::advance() {
+    if (isAtEnd()) return '\0';
+    char c = sourceCode[currentPos++];
+    updatePosition(c);
+    return c;
+}
+
+bool LexicalAnalyzer::isAtEnd() const {
+    return currentPos >= sourceCode.length();
+}
+
+void LexicalAnalyzer::updatePosition(char c) {
+    if (c == '\n') {
+        line++;
         column = 1;
-        /*
-        tokens.clear();*/   // No se limpian los tokens para permitir generar reportes incluso si hay errores
+    } else {
+        column++;
     }
+}
 
-    char LexicalAnalyzer::peek() const
-    {
-        if (isAtEnd())
-            return '\0';
-        return sourceCode[currentPos];
-    }
-
-    char LexicalAnalyzer::peekNext() const
-    {
-        if (currentPos + 1 >= sourceCode.length())
-            return '\0';
-        return sourceCode[currentPos + 1];
-    }
-    char LexicalAnalyzer::advance()
-    {
-        if (isAtEnd())
-            return '\0';
-        char c = sourceCode[currentPos++];
-        updatePosition(c);
-        return c;
-    }
-    bool LexicalAnalyzer::isAtEnd() const
-    {
-        return currentPos >= sourceCode.length();
-    }
-
-    void LexicalAnalyzer::updatePosition(char c)
-    {
-        if (c == '\n')
-        {
-            line++;
-            column = 1;
-        }
-        else
-        {
-            column++;
-        }
-    }
-
-    void LexicalAnalyzer::skipWhitespace()
-    {
-        while (!isAtEnd())
-        {
-            char c = peek();
-            if (c == ' ' || c == '\t' || c == '\r')
-            {
-                advance(); // Omitir espacios, tabs y retornos de carro
-            }
-            else if (c == '\n')
-            {
-                advance(); // Avanzar y actualizar posición para nueva línea
-            }
-            else if (c == '/' && peekNext() == '/')
-            {
-                // Comentario de una línea, avanzar hasta el final de la línea
-                while (!isAtEnd() && peek() != '\n')
-                    advance();
-            }
-            else
-            {
-                break; // No es espacio ni comentario, salir del bucle
-            }
-        }
-    }
-
-    Token LexicalAnalyzer::readString()
-    {
-        int startLine = line;
-        int startColumn = column;
-        string lexeme;
-
-        advance(); // Consume la comilla de apertura
-
-        while (!isAtEnd())
-        {
-            char c = peek();
-
-            if (c == '"')
-            {
-                advance(); // Consume la comilla de cierre
-                Token token(TokenType::CADENA, lexeme, startLine, startColumn);
-                tokens.push_back(token);
-                return token;
-            }
-            lexeme += c;
+void LexicalAnalyzer::skipWhitespace() {
+    while (!isAtEnd()) {
+        char c = peek();
+        if (c == ' ' || c == '\t') {
             advance();
+        } else if (c == '\n') {
+            advance();
+        } else {
+            break;
         }
-        // Si llegamos al final sin cerrar la cadena
-        string errorLexeme = "\"" + lexeme;
-        errors.addError(errorLexeme, ErrorType::LEXICO,
-                        "Cadena no cerrada antes del fin de archivo. Se esperaba \"\"",
-                        startLine, startColumn, ErrorSeverity::CRITICO);
-
-        Token token(TokenType::DESCONOCIDO, errorLexeme, startLine, startColumn);
-        tokens.push_back(token);
-        return token;
     }
-    Token LexicalAnalyzer::readNumberOrDate()
-    {
-        int startLine = line;
-        int startColumn = column;
-        std::string lexeme;
+}
 
-        // Leer digitos iniciales
-        while (!isAtEnd() && std::isdigit(peek()))
-        {
-            lexeme += advance();
+Token LexicalAnalyzer::readString() {
+    int startLine = line;
+    int startColumn = column;
+    std::string lexeme;
+    
+    advance(); // Consume la comilla de apertura
+    
+    while (!isAtEnd()) {
+        char c = peek();
+        
+        if (c == '"') {
+            advance(); // Consume la comilla de cierre
+            Token token(TokenType::CADENA, lexeme, startLine, startColumn);
+            tokens.push_back(token);
+            return token;
         }
+        
+        lexeme += c;
+        advance();
+    }
+    
+    // Error: cadena no cerrada
+    std::string errorLexeme = "\"" + lexeme;
+    errors.addError(errorLexeme, ErrorType::LEXICO_ERROR,
+                   "Cadena no cerrada antes del fin de archivo",
+                   startLine, startColumn, ErrorSeverity::CRITICO_ERROR);
+    
+    Token token(TokenType::DESCONOCIDO, errorLexeme, startLine, startColumn);
+    tokens.push_back(token);
+    return token;
+}
 
-        // Verificar si es una fecha (formato AAAA-MM-DD)
-        if (lexeme.length() == 4 && peek() == '-')
-        {
-            lexeme += advance(); // Agrega el guion
-
-            // Leer dos digitos del mes
-            if (!isAtEnd() && std::isdigit(peek()))
-            {
+Token LexicalAnalyzer::readNumberOrDate() {
+    int startLine = line;
+    int startColumn = column;
+    std::string lexeme;
+    
+    while (!isAtEnd() && std::isdigit(static_cast<unsigned char>(peek()))) {
+        lexeme += advance();
+    }
+    
+    // Verificar si es una fecha (formato AAAA-MM-DD)
+    if (lexeme.length() == 4 && peek() == '-') {
+        lexeme += advance(); // Agrega el guion
+        
+        // Leer mes
+        if (!isAtEnd() && std::isdigit(static_cast<unsigned char>(peek()))) {
+            lexeme += advance();
+            if (!isAtEnd() && std::isdigit(static_cast<unsigned char>(peek()))) {
                 lexeme += advance();
-                if (!isAtEnd() && std::isdigit(peek()))
-                {
+                
+                // Verificar segundo guion
+                if (peek() == '-') {
                     lexeme += advance();
-
-                    // Verificar el segundo guion
-                    if (peek() == '-')
-                    {
+                    
+                    // Leer dia
+                    if (!isAtEnd() && std::isdigit(static_cast<unsigned char>(peek()))) {
                         lexeme += advance();
-
-                        // Leer dos digitos del dia
-                        if (!isAtEnd() && std::isdigit(peek()))
-                        {
+                        if (!isAtEnd() && std::isdigit(static_cast<unsigned char>(peek()))) {
                             lexeme += advance();
-                            if (!isAtEnd() && std::isdigit(peek()))
-                            {
-                                lexeme += advance();
-
-                                // Validacion basica del formato
-                                if (lexeme.length() == 10)
-                                {
-                                    Token token(TokenType::FECHA, lexeme, startLine, startColumn);
-                                    tokens.push_back(token);
-                                    return token;
-                                }
+                            
+                            if (lexeme.length() == 10) {
+                                Token token(TokenType::FECHA, lexeme, startLine, startColumn);
+                                tokens.push_back(token);
+                                return token;
                             }
                         }
                     }
                 }
             }
-
-            // Si no cumplio el formato de fecha, reportar error
-            errors.addError(lexeme, ErrorType::LEXICO,
-                            "Formato de fecha invalido. Se esperaba AAAA-MM-DD",
-                            startLine, startColumn);
         }
-
-        // Si no es fecha, es un numero entero
-        Token token(TokenType::ENTERO, lexeme, startLine, startColumn);
-        tokens.push_back(token);
-        return token;
+        
+        // Si no es fecha valida, es un error
+        errors.addError(lexeme, ErrorType::LEXICO_ERROR,
+                       "Formato de fecha invalido. Se esperaba AAAA-MM-DD",
+                       startLine, startColumn);
     }
+    
+    Token token(TokenType::ENTERO, lexeme, startLine, startColumn);
+    tokens.push_back(token);
+    return token;
+}
 
-    TokenType LexicalAnalyzer::getKeywordType(const string &word) const
-    {
-        // Mapeo de palabras reservadas a sus tipos de token
-        if (word == "TABLERO")
-            return TokenType::TABLERO;
-        if (word == "COLUMNA")
-            return TokenType::COLUMNA;
-        if (word == "tarea")
-            return TokenType::TAREA;
-        if (word == "prioridad")
-            return TokenType::PRIORIDAD;
-        if (word == "responsable")
-            return TokenType::RESPONSABLE;
-        if (word == "fecha_limite")
-            return TokenType::FECHA_LIMITE;
-        if (word == "ALTA")
-            return TokenType::ALTA;
-        if (word == "MEDIA")
-            return TokenType::MEDIA;
-        if (word == "BAJA")
-            return TokenType::BAJA;
+TokenType LexicalAnalyzer::getKeywordType(const std::string& word) const {
+    if (word == "TABLERO") return TokenType::TABLERO;
+    if (word == "COLUMNA") return TokenType::COLUMNA;
+    if (word == "tarea") return TokenType::TAREA;
+    if (word == "prioridad") return TokenType::PRIORIDAD;
+    if (word == "responsable") return TokenType::RESPONSABLE;
+    if (word == "fecha_limite") return TokenType::FECHA_LIMITE;
+    if (word == "ALTA") return TokenType::ALTA;
+    if (word == "MEDIA") return TokenType::MEDIA;
+    if (word == "BAJA") return TokenType::BAJA;
+    
+    return TokenType::DESCONOCIDO;
+}
 
-        // Si no es palabra reservada, no es valida en este lenguaje
-        return TokenType::DESCONOCIDO;
+Token LexicalAnalyzer::readKeywordOrIdentifier() {
+    int startLine = line;
+    int startColumn = column;
+    std::string lexeme;
+    
+    while (!isAtEnd() && (std::isalnum(static_cast<unsigned char>(peek())) || peek() == '_')) {
+        lexeme += advance();
     }
-
-    Token LexicalAnalyzer::readKeywordOrIdentifier()
-    {
-        int startLine = line;
-        int startColumn = column;
-        std::string lexeme;
-
-        // Leer mientras sean caracteres alfanumericos o guion bajo
-        while (!isAtEnd() && (std::isalnum(peek()) || peek() == '_'))
-        {
-            lexeme += advance();
-        }
-
-        TokenType type = getKeywordType(lexeme);
-
-        // Si no es una palabra reservada, es un identificador invalido
-        if (type == TokenType::DESCONOCIDO)
-        {
-            errors.addError(lexeme, ErrorType::LEXICO,
-                            "Caracter o palabra no reconocida. No se permiten identificadores sueltos",
-                            startLine, startColumn);
-        }
-
-        Token token(type, lexeme, startLine, startColumn);
-        tokens.push_back(token);
-        return token;
+    
+    TokenType type = getKeywordType(lexeme);
+    
+    if (type == TokenType::DESCONOCIDO) {
+        errors.addError(lexeme, ErrorType::LEXICO_ERROR,
+                       "Palabra no reconocida: " + lexeme,
+                       startLine, startColumn);
     }
-    Token LexicalAnalyzer::readSymbol()
-    {
-        int startLine = line;
-        int startColumn = column;
-        char c = advance();
-        std::string lexeme(1, c);
-        TokenType type;
+    
+    Token token(type, lexeme, startLine, startColumn);
+    tokens.push_back(token);
+    return token;
+}
 
-        switch (c)
-        {
-        case '{':
-            type = TokenType::LLAVE_ABRE;
-            break;
-        case '}':
-            type = TokenType::LLAVE_CIERRA;
-            break;
-        case '[':
-            type = TokenType::CORCHETE_ABRE;
-            break;
-        case ']':
-            type = TokenType::CORCHETE_CIERRA;
-            break;
-        case ':':
-            type = TokenType::DOS_PUNTOS;
-            break;
-        case ',':
-            type = TokenType::COMA;
-            break;
-        case ';':
-            type = TokenType::PUNTO_Y_COMA;
-            break;
+Token LexicalAnalyzer::readSymbol() {
+    int startLine = line;
+    int startColumn = column;
+    char c = advance();
+    std::string lexeme(1, c);
+    TokenType type;
+    
+    switch (c) {
+        case '{': type = TokenType::LLAVE_ABRE; break;
+        case '}': type = TokenType::LLAVE_CIERRA; break;
+        case '[': type = TokenType::CORCHETE_ABRE; break;
+        case ']': type = TokenType::CORCHETE_CIERRA; break;
+        case ':': type = TokenType::DOS_PUNTOS; break;
+        case ',': type = TokenType::COMA; break;
+        case ';': type = TokenType::PUNTO_Y_COMA; break;
         default:
             type = TokenType::DESCONOCIDO;
-            errors.addError(lexeme, ErrorType::LEXICO,
-                            "Caracter no reconocido: '" + std::string(1, c) + "'",
-                            startLine, startColumn);
+            errors.addError(lexeme, ErrorType::LEXICO_ERROR,
+                           "Caracter no reconocido: '" + std::string(1, c) + "'",
+                           startLine, startColumn);
             break;
-        }
-        Token token(type, lexeme, startLine, startColumn);
-        tokens.push_back(token);
-        return token;
     }
-    Token LexicalAnalyzer::getNextToken()
-    {
-        // Saltar espacios en blanco antes de comenzar
-        skipWhitespace();
+    
+    Token token(type, lexeme, startLine, startColumn);
+    tokens.push_back(token);
+    return token;
+}
 
-        if (isAtEnd())
-        {
-            Token eofToken(TokenType::FIN_DE_ARCHIVO, "", line, column);
-            return eofToken;
-        }
+Token LexicalAnalyzer::getNextToken() {
+    skipWhitespace();
+    
+    if (isAtEnd()) {
+        Token eofToken(TokenType::FIN_DE_ARCHIVO, "", line, column);
+        return eofToken;
+    }
+    
+    char current = peek();
+    
+    if (current == '"') {
+        return readString();
+    } else if (std::isdigit(static_cast<unsigned char>(current))) {
+        return readNumberOrDate();
+    } else if (std::isalpha(static_cast<unsigned char>(current))) {
+        return readKeywordOrIdentifier();
+    } else {
+        return readSymbol();
+    }
+}
 
-        char current = peek();
+const std::vector<Token>& LexicalAnalyzer::getTokens() const {
+    return tokens;
+}
 
-        // Implementacion del AFD mediante despacho a metodos especificos
-        if (current == '"')
-        {
-            return readString();
-        }
-        else if (std::isdigit(current))
-        {
-            return readNumberOrDate();
-        }
-        else if (std::isalpha(current))
-        {
-            return readKeywordOrIdentifier();
-        }
-        else
-        {
-            return readSymbol();
+std::string LexicalAnalyzer::getStatistics() const {
+    int tokenCount = tokens.size();
+    int validTokens = 0;
+    
+    for (const auto& token : tokens) {
+        if (token.getType() != TokenType::DESCONOCIDO &&
+            token.getType() != TokenType::FIN_DE_ARCHIVO) {
+            validTokens++;
         }
     }
-
-    const std::vector<Token> &LexicalAnalyzer::getTokens() const
-    {
-        return tokens;
-    }
-
-    std::string LexicalAnalyzer::getStatistics() const
-    {
-        int tokenCount = tokens.size();
-        int validTokens = 0;
-
-        for (const auto &token : tokens)
-        {
-            if (token.getType() != TokenType::DESCONOCIDO &&
-                token.getType() != TokenType::FIN_DE_ARCHIVO)
-            {
-                validTokens++;
-            }
-        }
-
-        return "Archivo: " + filename + " | Tokens: " + std::to_string(tokenCount) +
-               " | Validos: " + std::to_string(validTokens) +
-               " | Invalidos: " + std::to_string(tokenCount - validTokens);
-    }
+    
+    return "Archivo: " + filename + " | Tokens: " + std::to_string(tokenCount) +
+           " | Validos: " + std::to_string(validTokens) +
+           " | Invalidos: " + std::to_string(tokenCount - validTokens);
+}
 
 } // namespace TaskScript

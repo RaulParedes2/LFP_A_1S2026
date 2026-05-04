@@ -13,65 +13,43 @@ namespace TaskScript
         errors.emplace_back(nextId++, lexeme, type, description, line, column, severity);
     }
 
-    bool ErrorManager::hasErrors() const
-    {
-        return !errors.empty();
-    }
-    int ErrorManager::getErrorCount() const
-    {
-        return errors.size();
-    }
-    const vector<Error> &ErrorManager::getAllErrors() const
-    {
-        return errors;
-    }
+    bool ErrorManager::hasErrors() const { return !errors.empty(); }
+    int ErrorManager::getErrorCount() const { return errors.size(); }
+    const vector<Error> &ErrorManager::getAllErrors() const { return errors; }
+    
     void ErrorManager::clear()
     {
         errors.clear();
-        nextId = 1; // Reiniciar el contador de IDs al limpiar los errores
+        nextId = 1;
     }
 
     string ErrorManager::generateHtmlErrorTable() const
     {
-        if (errors.empty())
-        {
-            return "<p>No se encontraron errores.</p>";
-        }
+        if (errors.empty()) return "<p>No se encontraron errores.</p>";
+        
         string html = "<h3>Tabla de Errores</h3>"
                       "<table border=\"1\" cellpadding=\"5\" cellspacing=\"0\">"
                       "<thead>"
                       "<tr style=\"background-color: #333; color: white;\">"
                       "<th>No.</th><th>Lexema/Token</th><th>Tipo</th>"
                       "<th>Descripcion</th><th>Linea</th><th>Columna</th><th>Gravedad</th>"
-                      "</tr>"
+                      "</table>"
                       "</thead><tbody>";
-        for (const auto &error : errors)
-        {
-            html += error.toHtmlRow();
-        }
+        for (const auto &error : errors) html += error.toHtmlRow();
         html += "</tbody></table>";
         html += "<p><strong>Total de errores:</strong> " + std::to_string(errors.size()) + "</p>";
-
         return html;
     }
 
     string ErrorManager::getErrorStats() const {
-        int lexicoCount = 0;
-        int sintacticoCount = 0;
-        int criticoCount = 0;
-
+        int lexicoCount = 0, sintacticoCount = 0, criticoCount = 0;
         for(const auto& error : errors){
-            if(error.getType() == ErrorType::LEXICO){
-                lexicoCount++;
-            }else{
-                sintacticoCount++;
-            }
-            if(error.getSeverity() == ErrorSeverity::CRITICO){
-                criticoCount++;
-            }
+            if(error.getType() == ErrorType::LEXICO_ERROR) lexicoCount++;
+            else sintacticoCount++;
+            if(error.getSeverity() == ErrorSeverity::CRITICO_ERROR) criticoCount++;
         }
         return "Errores Lexicos: " + std::to_string(lexicoCount) +
-           " | Errores Sintacticos: " + std::to_string(sintacticoCount) +
-           " | Errores Criticos: " + std::to_string(criticoCount);
+               " | Errores Sintacticos: " + std::to_string(sintacticoCount) +
+               " | Errores Criticos: " + std::to_string(criticoCount);
     }
 }
