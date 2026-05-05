@@ -1,0 +1,7 @@
+TABLERO "Proyecto" {
+    COLUMNA "Tareas" {
+        tarea: "Tarea1" [prioridad: $ALTA, responsable: "Juan", fecha_limite: 2026-05-01],
+        tarea: "Cadena sin cerrar [prioridad: ALTA, responsable: "Pedro],
+        tarea: "Tarea3" [prioridad ALTA, responsable: "Luis", fecha_limite: 2026-05-03]
+    };
+};

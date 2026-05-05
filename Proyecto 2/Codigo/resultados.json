@@ -4,18 +4,32 @@
     {"no": 2, "lexeme": "Proyecto", "type": "CADENA", "line": 1, "column": 9},
     {"no": 3, "lexeme": "{", "type": "LLAVE_ABRE", "line": 1, "column": 20},
     {"no": 4, "lexeme": "COLUMNA", "type": "COLUMNA", "line": 2, "column": 5},
-    {"no": 5, "lexeme": "Tareas {\n        tarea: ", "type": "CADENA", "line": 2, "column": 13},
-    {"no": 6, "lexeme": "Tarea1", "type": "DESCONOCIDO", "line": 3, "column": 17},
-    {"no": 7, "lexeme": " [prioridad: ALTA, responsable: ", "type": "CADENA", "line": 3, "column": 23},
-    {"no": 8, "lexeme": "Juan", "type": "DESCONOCIDO", "line": 3, "column": 57},
-    {"no": 9, "lexeme": "\", fecha_limite: 2026-05-01]\n    };\n};", "type": "DESCONOCIDO", "line": 3, "column": 61}
+    {"no": 5, "lexeme": "Tareas", "type": "CADENA", "line": 2, "column": 13},
+    {"no": 6, "lexeme": "{", "type": "LLAVE_ABRE", "line": 2, "column": 22},
+    {"no": 7, "lexeme": "tarea", "type": "TAREA", "line": 3, "column": 9},
+    {"no": 8, "lexeme": ":", "type": "DOS_PUNTOS", "line": 3, "column": 14},
+    {"no": 9, "lexeme": "Tarea1", "type": "CADENA", "line": 3, "column": 16},
+    {"no": 10, "lexeme": "[", "type": "CORCHETE_ABRE", "line": 3, "column": 25},
+    {"no": 11, "lexeme": "prioridad", "type": "PRIORIDAD", "line": 3, "column": 26},
+    {"no": 12, "lexeme": ":", "type": "DOS_PUNTOS", "line": 3, "column": 35},
+    {"no": 13, "lexeme": "@", "type": "DESCONOCIDO", "line": 3, "column": 37},
+    {"no": 14, "lexeme": ",", "type": "COMA", "line": 3, "column": 38},
+    {"no": 15, "lexeme": "responsable", "type": "RESPONSABLE", "line": 3, "column": 40},
+    {"no": 16, "lexeme": ":", "type": "DOS_PUNTOS", "line": 3, "column": 51},
+    {"no": 17, "lexeme": "Juan", "type": "CADENA", "line": 3, "column": 53},
+    {"no": 18, "lexeme": ",", "type": "COMA", "line": 3, "column": 59},
+    {"no": 19, "lexeme": "fecha_limite", "type": "FECHA_LIMITE", "line": 3, "column": 61},
+    {"no": 20, "lexeme": ":", "type": "DOS_PUNTOS", "line": 3, "column": 73},
+    {"no": 21, "lexeme": "2026-05-01", "type": "FECHA", "line": 3, "column": 75},
+    {"no": 22, "lexeme": "]", "type": "CORCHETE_CIERRA", "line": 3, "column": 85},
+    {"no": 23, "lexeme": "}", "type": "LLAVE_CIERRA", "line": 4, "column": 5},
+    {"no": 24, "lexeme": ";", "type": "PUNTO_Y_COMA", "line": 4, "column": 6},
+    {"no": 25, "lexeme": "}", "type": "LLAVE_CIERRA", "line": 5, "column": 1},
+    {"no": 26, "lexeme": ";", "type": "PUNTO_Y_COMA", "line": 5, "column": 2}
   ],
   "errors": [
-    {"no": 1, "lexeme": "Tarea1", "type": "Lexico", "description": "Palabra no reconocida: Tarea1", "line": 3, "column": 17, "severity": "ERROR"},
-    {"no": 2, "lexeme": "Juan", "type": "Lexico", "description": "Palabra no reconocida: Juan", "line": 3, "column": 57, "severity": "ERROR"},
-    {"no": 3, "lexeme": "\", fecha_limite: 2026-05-01]\n    };\n};", "type": "Lexico", "description": "Cadena no cerrada antes del fin de archivo", "line": 3, "column": 61, "severity": "CRITICO"},
-    {"no": 4, "lexeme": "Tarea1", "type": "Sintactico", "description": "Se esperaba '{' para abrir el bloque de la columna Se encontro: DESCONOCIDO", "line": 3, "column": 17, "severity": "ERROR"}
+    {"no": 1, "lexeme": "@", "type": "Lexico", "description": "Caracter no reconocido: '@'", "line": 3, "column": 37, "severity": "ERROR"}
 
   ],
-  "dotCode": ""
+  "dotCode": "digraph ArbolDerivacion {\n  rankdir=TB;\n  node [fontname=\"Arial\", fontsize=10];\n  edge [arrowhead=normal];\n\n  node0 [shape=ellipse, style=filled, fillcolor=\"#87CEEB\", label=\"programa\"];\n  node1 [shape=box, style=filled, fillcolor=\"#90EE90\", label=\"TABLERO\\nTABLERO\"];\n  node0 -> node1;\n  node2 [shape=box, style=filled, fillcolor=\"#90EE90\", label=\"CADENA\\nProyecto\"];\n  node0 -> node2;\n  node3 [shape=ellipse, style=filled, fillcolor=\"#87CEEB\", label=\"columnas\"];\n  node4 [shape=ellipse, style=filled, fillcolor=\"#87CEEB\", label=\"columna\"];\n  node5 [shape=box, style=filled, fillcolor=\"#90EE90\", label=\"COLUMNA\\nCOLUMNA\"];\n  node4 -> node5;\n  node6 [shape=box, style=filled, fillcolor=\"#90EE90\", label=\"CADENA\\nTareas\"];\n  node4 -> node6;\n  node7 [shape=ellipse, style=filled, fillcolor=\"#87CEEB\", label=\"tareas\"];\n  node8 [shape=ellipse, style=filled, fillcolor=\"#87CEEB\", label=\"tarea\"];\n  node9 [shape=box, style=filled, fillcolor=\"#90EE90\", label=\"TAREA\\ntarea\"];\n  node8 -> node9;\n  node10 [shape=box, style=filled, fillcolor=\"#90EE90\", label=\"CADENA\\nTarea1\"];\n  node8 -> node10;\n  node11 [shape=box, style=filled, fillcolor=\"#90EE90\", label=\"CORCHETE_ABRE\\n[\"];\n  node8 -> node11;\n  node12 [shape=ellipse, style=filled, fillcolor=\"#87CEEB\", label=\"atributos\"];\n  node13 [shape=ellipse, style=filled, fillcolor=\"#87CEEB\", label=\"atributo\"];\n  node14 [shape=box, style=filled, fillcolor=\"#90EE90\", label=\"PRIORIDAD\\nprioridad\"];\n  node13 -> node14;\n  node15 [shape=ellipse, style=filled, fillcolor=\"#87CEEB\", label=\"prioridad\"];\n  node13 -> node15;\n  node12 -> node13;\n  node16 [shape=ellipse, style=filled, fillcolor=\"#87CEEB\", label=\"atributo\"];\n  node17 [shape=box, style=filled, fillcolor=\"#90EE90\", label=\"RESPONSABLE\\nresponsable\"];\n  node16 -> node17;\n  node18 [shape=box, style=filled, fillcolor=\"#90EE90\", label=\"CADENA\\nJuan\"];\n  node16 -> node18;\n  node12 -> node16;\n  node19 [shape=ellipse, style=filled, fillcolor=\"#87CEEB\", label=\"atributo\"];\n  node20 [shape=box, style=filled, fillcolor=\"#90EE90\", label=\"FECHA_LIMITE\\nfecha_limite\"];\n  node19 -> node20;\n  node21 [shape=box, style=filled, fillcolor=\"#90EE90\", label=\"FECHA\\n2026-05-01\"];\n  node19 -> node21;\n  node12 -> node19;\n  node8 -> node12;\n  node7 -> node8;\n  node4 -> node7;\n  node3 -> node4;\n  node0 -> node3;\n}\n"
 }

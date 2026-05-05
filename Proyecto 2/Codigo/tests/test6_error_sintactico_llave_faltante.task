@@ -1,0 +1,4 @@
+TABLERO "Proyecto" {
+    COLUMNA "Tareas" {
+        tarea: "Tarea1" [prioridad: ALTA, responsable: "Juan", fecha_limite: 2026-05-01]
+    };

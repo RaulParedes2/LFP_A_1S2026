@@ -132,7 +132,7 @@ namespace TaskScript
         }
     }
 
-    Token LexicalAnalyzer::readString()
+    /*Token LexicalAnalyzer::readString()
     {
         int startLine = line;
         int startColumn = column;
@@ -163,6 +163,41 @@ namespace TaskScript
                         startLine, startColumn, ErrorSeverity::CRITICO_ERROR);
 
         // Crear token de error
+        Token token(TokenType::DESCONOCIDO, errorLexeme, startLine, startColumn);
+        tokens.push_back(token);
+        return token;
+    }*/
+
+    Token LexicalAnalyzer::readString()
+    {
+        int startLine = line;
+        int startColumn = column;
+        std::string lexeme;
+
+        advance(); // Consume la comilla de apertura
+
+        while (!isAtEnd())
+        {
+            char c = peek();
+
+            if (c == '"')
+            {
+                advance();
+                Token token(TokenType::CADENA, lexeme, startLine, startColumn);
+                tokens.push_back(token);
+                return token;
+            }
+
+            lexeme += c;
+            advance();
+        }
+
+        // Error: cadena no cerrada - mostrar SOLO el inicio
+        std::string errorLexeme = "\"" + (lexeme.length() > 20 ? lexeme.substr(0, 17) + "..." : lexeme);
+        errors.addError(errorLexeme, ErrorType::LEXICO_ERROR,
+                        "Cadena no cerrada antes del fin de archivo",
+                        startLine, startColumn, ErrorSeverity::CRITICO_ERROR);
+
         Token token(TokenType::DESCONOCIDO, errorLexeme, startLine, startColumn);
         tokens.push_back(token);
         return token;
@@ -252,7 +287,7 @@ namespace TaskScript
         return TokenType::DESCONOCIDO;
     }
 
-    Token LexicalAnalyzer::readKeywordOrIdentifier()
+    /*Token LexicalAnalyzer::readKeywordOrIdentifier()
     {
         int startLine = line;
         int startColumn = column;
@@ -272,6 +307,31 @@ namespace TaskScript
             errors.addError(lexeme, ErrorType::LEXICO_ERROR,
                             "Palabra no reconocida: " + lexeme,
                             startLine, startColumn);
+        }
+
+        Token token(type, lexeme, startLine, startColumn);
+        tokens.push_back(token);
+        return token;
+    }*/
+
+    Token LexicalAnalyzer::readKeywordOrIdentifier()
+    {
+        int startLine = line;
+        int startColumn = column;
+        std::string lexeme;
+
+        while (!isAtEnd() && (std::isalnum(static_cast<unsigned char>(peek())) || peek() == '_'))
+        {
+            lexeme += advance();
+        }
+
+        TokenType type = getKeywordType(lexeme);
+
+        // Solo reportar error si no es una palabra reservada y no es parte de una cadena
+        if (type == TokenType::DESCONOCIDO)
+        {
+            // No reportar como error, solo crear token DESCONOCIDO
+            // El parser manejará el error
         }
 
         Token token(type, lexeme, startLine, startColumn);
@@ -323,35 +383,51 @@ namespace TaskScript
          return token;
      }*/
 
-    Token LexicalAnalyzer::readSymbol() {
-    int startLine = line;
-    int startColumn = column;
-    char c = advance();
-    std::string lexeme(1, c);
-    TokenType type;
-    
-    switch (c) {
-        case '{': type = TokenType::LLAVE_ABRE; break;
-        case '}': type = TokenType::LLAVE_CIERRA; break;
-        case '[': type = TokenType::CORCHETE_ABRE; break;
-        case ']': type = TokenType::CORCHETE_CIERRA; break;
-        case ':': type = TokenType::DOS_PUNTOS; break;
-        case ',': type = TokenType::COMA; break;
-        case ';': type = TokenType::PUNTO_Y_COMA; break;
+    Token LexicalAnalyzer::readSymbol()
+    {
+        int startLine = line;
+        int startColumn = column;
+        char c = advance();
+        std::string lexeme(1, c);
+        TokenType type;
+
+        switch (c)
+        {
+        case '{':
+            type = TokenType::LLAVE_ABRE;
+            break;
+        case '}':
+            type = TokenType::LLAVE_CIERRA;
+            break;
+        case '[':
+            type = TokenType::CORCHETE_ABRE;
+            break;
+        case ']':
+            type = TokenType::CORCHETE_CIERRA;
+            break;
+        case ':':
+            type = TokenType::DOS_PUNTOS;
+            break;
+        case ',':
+            type = TokenType::COMA;
+            break;
+        case ';':
+            type = TokenType::PUNTO_Y_COMA;
+            break;
         default:
             type = TokenType::DESCONOCIDO;
             // Solo agregar error si no es un token repetido
             errors.addError(lexeme, ErrorType::LEXICO_ERROR,
-                           "Caracter no reconocido: '" + std::string(1, c) + "'",
-                           startLine, startColumn,
-                           ErrorSeverity::ERROR_NORMAL);
+                            "Caracter no reconocido: '" + std::string(1, c) + "'",
+                            startLine, startColumn,
+                            ErrorSeverity::ERROR_NORMAL);
             break;
+        }
+
+        Token token(type, lexeme, startLine, startColumn);
+        tokens.push_back(token);
+        return token;
     }
-    
-    Token token(type, lexeme, startLine, startColumn);
-    tokens.push_back(token);
-    return token;
-}
 
     Token LexicalAnalyzer::getNextToken()
     {

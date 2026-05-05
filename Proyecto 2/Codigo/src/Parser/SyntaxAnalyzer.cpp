@@ -115,7 +115,7 @@ namespace TaskScript
         return node;
     }*/
 
-    std::unique_ptr<ASTNode> SyntaxAnalyzer::parsePrioridad()
+    /*std::unique_ptr<ASTNode> SyntaxAnalyzer::parsePrioridad()
     {
         auto node = std::make_unique<ASTNode>("prioridad");
 
@@ -152,181 +152,39 @@ namespace TaskScript
         }
 
         return node;
-    }
-    /*std::unique_ptr<ASTNode> SyntaxAnalyzer::parseAtributo() {
-        auto node = std::make_unique<ASTNode>("atributo");
-
-        if (check(TokenType::PRIORIDAD)) {
-            node->addChild(std::make_unique<ASTNode>(currentToken));
-            advance();
-            consume(TokenType::DOS_PUNTOS, "Se esperaba ':' despues de 'prioridad'");
-            node->addChild(parsePrioridad());
-        }
-        else if (check(TokenType::RESPONSABLE)) {
-            node->addChild(std::make_unique<ASTNode>(currentToken));
-            advance();
-            consume(TokenType::DOS_PUNTOS, "Se esperaba ':' despues de 'responsable'");
-
-            if (check(TokenType::CADENA)) {
-                node->addChild(std::make_unique<ASTNode>(currentToken));
-                advance();
-            } else {
-                hasSyntacticError = true;
-                errors.addError(currentToken.getLexeme(), ErrorType::SINTACTICO_ERROR,
-                               "Se esperaba una cadena para el responsable",
-                               currentToken.getLine(), currentToken.getColumn(),
-                               ErrorSeverity::ERROR_NORMAL);
-            }
-        }
-        else if (check(TokenType::FECHA_LIMITE)) {
-            node->addChild(std::make_unique<ASTNode>(currentToken));
-            advance();
-            consume(TokenType::DOS_PUNTOS, "Se esperaba ':' despues de 'fecha_limite'");
-
-            if (check(TokenType::FECHA)) {
-                node->addChild(std::make_unique<ASTNode>(currentToken));
-                advance();
-            } else {
-                hasSyntacticError = true;
-                errors.addError(currentToken.getLexeme(), ErrorType::SINTACTICO_ERROR,
-                               "Se esperaba una fecha en formato AAAA-MM-DD",
-                               currentToken.getLine(), currentToken.getColumn(),
-                               ErrorSeverity::ERROR_NORMAL);
-            }
-        }
-        else {
-            hasSyntacticError = true;
-            errors.addError(currentToken.getLexeme(), ErrorType::SINTACTICO_ERROR,
-                           "Se esperaba 'prioridad', 'responsable' o 'fecha_limite'",
-                           currentToken.getLine(), currentToken.getColumn(),
-                           ErrorSeverity::ERROR_NORMAL);
-            synchronizeToNextValid();
-        }
-
-        return node;
     }*/
 
-    std::unique_ptr<ASTNode> SyntaxAnalyzer::parseAtributo()
+    std::unique_ptr<ASTNode> SyntaxAnalyzer::parsePrioridad()
     {
-        auto node = std::make_unique<ASTNode>("atributo");
+        auto node = std::make_unique<ASTNode>("prioridad");
 
-        // Si es DESCONOCIDO, reportar SOLO UN error y continuar
+        // Si es DESCONOCIDO, recuperarse y salir sin error adicional
         if (currentToken.getType() == TokenType::DESCONOCIDO)
         {
-            // El error ya fue reportado por el lexer como LEXICO
-            // Consumir el token erróneo y continuar
-            advance();
+            advance(); // Consumir el token erróneo
             return node;
         }
 
-        /*if (check(TokenType::PRIORIDAD))
+        if (check(TokenType::ALTA))
         {
             node->addChild(std::make_unique<ASTNode>(currentToken));
             advance();
-
-            // Verificar si hay ':' después de prioridad
-            if (!check(TokenType::DOS_PUNTOS))
-            {
-                hasSyntacticError = true;
-                errors.addError(currentToken.getLexeme(), ErrorType::SINTACTICO_ERROR,
-                                "Se esperaba ':' después de 'prioridad', se encontró: " + currentToken.typeToString(),
-                                currentToken.getLine(), currentToken.getColumn(),
-                                ErrorSeverity::ERROR_NORMAL);
-
-                // Recuperación: consumir hasta ',' , ']' o '}'
-                while (!check(TokenType::COMA) && !check(TokenType::CORCHETE_CIERRA) &&
-                       !check(TokenType::LLAVE_CIERRA) && !check(TokenType::FIN_DE_ARCHIVO))
-                {
-                    advance();
-                }
-                return node;
-            }
-
-            consume(TokenType::DOS_PUNTOS, "Se esperaba ':' despues de 'prioridad'");
-            node->addChild(parsePrioridad());
-        }*/
-        if (check(TokenType::PRIORIDAD))
-        {
-            node->addChild(std::make_unique<ASTNode>(currentToken));
-            advance();
-
-            // Verificar si hay ':' después de prioridad
-            if (!check(TokenType::DOS_PUNTOS))
-            {
-                hasSyntacticError = true;
-                // Este error debe reportarse con el lexema que sigue a prioridad
-                std::string foundToken = currentToken.typeToString();
-                if (currentToken.getType() == TokenType::ALTA)
-                    foundToken = "ALTA";
-                else if (currentToken.getType() == TokenType::MEDIA)
-                    foundToken = "MEDIA";
-                else if (currentToken.getType() == TokenType::BAJA)
-                    foundToken = "BAJA";
-
-                errors.addError(currentToken.getLexeme(), ErrorType::SINTACTICO_ERROR,
-                                "Se esperaba ':' después de 'prioridad', se encontró: " + foundToken,
-                                currentToken.getLine(), currentToken.getColumn(),
-                                ErrorSeverity::ERROR_NORMAL);
-
-                // Recuperación: consumir hasta ',' , ']' o '}'
-                while (!check(TokenType::COMA) && !check(TokenType::CORCHETE_CIERRA) &&
-                       !check(TokenType::LLAVE_CIERRA) && !check(TokenType::FIN_DE_ARCHIVO))
-                {
-                    advance();
-                }
-                return node;
-            }
-
-            consume(TokenType::DOS_PUNTOS, "Se esperaba ':' despues de 'prioridad'");
-            node->addChild(parsePrioridad());
         }
-        else if (check(TokenType::RESPONSABLE))
+        else if (check(TokenType::MEDIA))
         {
             node->addChild(std::make_unique<ASTNode>(currentToken));
             advance();
-            consume(TokenType::DOS_PUNTOS, "Se esperaba ':' despues de 'responsable'");
-
-            if (check(TokenType::CADENA))
-            {
-                node->addChild(std::make_unique<ASTNode>(currentToken));
-                advance();
-            }
-            else
-            {
-                hasSyntacticError = true;
-                errors.addError(currentToken.getLexeme(), ErrorType::SINTACTICO_ERROR,
-                                "Se esperaba una cadena para el responsable",
-                                currentToken.getLine(), currentToken.getColumn(),
-                                ErrorSeverity::ERROR_NORMAL);
-                advance();
-            }
         }
-        else if (check(TokenType::FECHA_LIMITE))
+        else if (check(TokenType::BAJA))
         {
             node->addChild(std::make_unique<ASTNode>(currentToken));
             advance();
-            consume(TokenType::DOS_PUNTOS, "Se esperaba ':' despues de 'fecha_limite'");
-
-            if (check(TokenType::FECHA))
-            {
-                node->addChild(std::make_unique<ASTNode>(currentToken));
-                advance();
-            }
-            else
-            {
-                hasSyntacticError = true;
-                errors.addError(currentToken.getLexeme(), ErrorType::SINTACTICO_ERROR,
-                                "Se esperaba una fecha en formato AAAA-MM-DD",
-                                currentToken.getLine(), currentToken.getColumn(),
-                                ErrorSeverity::ERROR_NORMAL);
-                advance();
-            }
         }
         else
         {
             hasSyntacticError = true;
             errors.addError(currentToken.getLexeme(), ErrorType::SINTACTICO_ERROR,
-                            "Se esperaba 'prioridad', 'responsable' o 'fecha_limite'",
+                            "Se esperaba ALTA, MEDIA o BAJA. Se encontro: " + currentToken.typeToString(),
                             currentToken.getLine(), currentToken.getColumn(),
                             ErrorSeverity::ERROR_NORMAL);
             advance();
@@ -334,6 +192,322 @@ namespace TaskScript
 
         return node;
     }
+
+    /*std::unique_ptr<ASTNode> SyntaxAnalyzer::parseAtributo()
+    {
+        auto node = std::make_unique<ASTNode>("atributo");
+
+        // Si es DESCONOCIDO, reportar SOLO UN error y continuar
+        if (currentToken.getType() == TokenType::DESCONOCIDO)
+        {
+            // Consumir hasta encontrar ',' , ']' o '}'
+            while (!check(TokenType::COMA) && !check(TokenType::CORCHETE_CIERRA) &&
+                   !check(TokenType::LLAVE_CIERRA) && !check(TokenType::FIN_DE_ARCHIVO))
+            {
+                advance();
+            }
+            advance(); // Consumir la coma o corchete
+            return node;
+        }*/
+
+    /*std::unique_ptr<ASTNode> SyntaxAnalyzer::parseAtributo()
+    {
+        auto node = std::make_unique<ASTNode>("atributo");
+
+        // Si es DESCONOCIDO (error léxico), consumir hasta el final del atributo
+        if (currentToken.getType() == TokenType::DESCONOCIDO)
+        {
+            // Consumir el token erróneo
+            advance();
+
+            // Consumir hasta encontrar ',' , ']' o '}'
+            while (!check(TokenType::COMA) && !check(TokenType::CORCHETE_CIERRA) &&
+                   !check(TokenType::LLAVE_CIERRA) && !check(TokenType::FIN_DE_ARCHIVO))
+            {
+                advance();
+            }
+
+            // Si hay coma, consumirla también
+            if (check(TokenType::COMA))
+            {
+                advance();
+            }
+
+            return node;
+        }
+
+        /*  if (check(TokenType::PRIORIDAD))
+          {
+              node->addChild(std::make_unique<ASTNode>(currentToken));
+              advance();
+
+              // Verificar si hay ':' después de prioridad
+              if (!check(TokenType::DOS_PUNTOS))
+              {
+                  hasSyntacticError = true;
+                  // Este error debe reportarse con el lexema que sigue a prioridad
+                  std::string foundToken = currentToken.typeToString();
+                  if (currentToken.getType() == TokenType::ALTA)
+                      foundToken = "ALTA";
+                  else if (currentToken.getType() == TokenType::MEDIA)
+                      foundToken = "MEDIA";
+                  else if (currentToken.getType() == TokenType::BAJA)
+                      foundToken = "BAJA";
+
+                  errors.addError(currentToken.getLexeme(), ErrorType::SINTACTICO_ERROR,
+                                  "Se esperaba ':' después de 'prioridad', se encontró: " + foundToken,
+                                  currentToken.getLine(), currentToken.getColumn(),
+                                  ErrorSeverity::ERROR_NORMAL);
+
+                  // Recuperación: consumir hasta ',' , ']' o '}'
+                  while (!check(TokenType::COMA) && !check(TokenType::CORCHETE_CIERRA) &&
+                         !check(TokenType::LLAVE_CIERRA) && !check(TokenType::FIN_DE_ARCHIVO))
+                  {
+                      advance();
+                  }
+                  return node;
+              }
+
+              consume(TokenType::DOS_PUNTOS, "Se esperaba ':' despues de 'prioridad'");
+              node->addChild(parsePrioridad());
+          }*/
+    /*
+            if (check(TokenType::PRIORIDAD))
+            {
+                node->addChild(std::make_unique<ASTNode>(currentToken));
+                advance();
+
+                if (!check(TokenType::DOS_PUNTOS))
+                {
+                    hasSyntacticError = true;
+
+                    std::string foundToken = currentToken.typeToString();
+                    if (currentToken.getType() == TokenType::ALTA)
+                        foundToken = "ALTA";
+                    else if (currentToken.getType() == TokenType::MEDIA)
+                        foundToken = "MEDIA";
+                    else if (currentToken.getType() == TokenType::BAJA)
+                        foundToken = "BAJA";
+
+                    errors.addError(currentToken.getLexeme(), ErrorType::SINTACTICO_ERROR,
+                                    "Se esperaba ':' después de 'prioridad', se encontró: " + foundToken,
+                                    currentToken.getLine(), currentToken.getColumn(),
+                                    ErrorSeverity::ERROR_NORMAL);
+
+                    // Consumir hasta el final
+                    while (!check(TokenType::CORCHETE_CIERRA) && !check(TokenType::LLAVE_CIERRA) &&
+                           !check(TokenType::FIN_DE_ARCHIVO))
+                    {
+                        advance();
+                    }
+
+                    return node;
+                }
+
+                consume(TokenType::DOS_PUNTOS, "Se esperaba ':' despues de 'prioridad'");
+                node->addChild(parsePrioridad());
+            }
+            else if (check(TokenType::RESPONSABLE))
+            {
+                node->addChild(std::make_unique<ASTNode>(currentToken));
+                advance();
+                consume(TokenType::DOS_PUNTOS, "Se esperaba ':' despues de 'responsable'");
+
+                if (check(TokenType::CADENA))
+                {
+                    node->addChild(std::make_unique<ASTNode>(currentToken));
+                    advance();
+                }
+                else
+                {
+                    hasSyntacticError = true;
+                    errors.addError(currentToken.getLexeme(), ErrorType::SINTACTICO_ERROR,
+                                    "Se esperaba una cadena para el responsable",
+                                    currentToken.getLine(), currentToken.getColumn(),
+                                    ErrorSeverity::ERROR_NORMAL);
+                    advance();
+                }
+            }
+            else if (check(TokenType::FECHA_LIMITE))
+            {
+                node->addChild(std::make_unique<ASTNode>(currentToken));
+                advance();
+                consume(TokenType::DOS_PUNTOS, "Se esperaba ':' despues de 'fecha_limite'");
+
+                if (check(TokenType::FECHA))
+                {
+                    node->addChild(std::make_unique<ASTNode>(currentToken));
+                    advance();
+                }
+                else
+                {
+                    hasSyntacticError = true;
+                    errors.addError(currentToken.getLexeme(), ErrorType::SINTACTICO_ERROR,
+                                    "Se esperaba una fecha en formato AAAA-MM-DD",
+                                    currentToken.getLine(), currentToken.getColumn(),
+                                    ErrorSeverity::ERROR_NORMAL);
+                    advance();
+                }
+            }
+            else
+            {
+                hasSyntacticError = true;
+                errors.addError(currentToken.getLexeme(), ErrorType::SINTACTICO_ERROR,
+                                "Se esperaba 'prioridad', 'responsable' o 'fecha_limite'",
+                                currentToken.getLine(), currentToken.getColumn(),
+                                ErrorSeverity::ERROR_NORMAL);
+                advance();
+            }
+
+            return node;
+        }
+        */
+
+    std::unique_ptr<ASTNode> SyntaxAnalyzer::parseAtributo()
+{
+    auto node = std::make_unique<ASTNode>("atributo");
+
+    // Si es DESCONOCIDO (error léxico), recuperarse y salir
+    if (currentToken.getType() == TokenType::DESCONOCIDO)
+    {
+        advance();  // Consumir el token erróneo
+        
+        // Consumir hasta encontrar ',' , ']' o '}'
+        while (!check(TokenType::COMA) && !check(TokenType::CORCHETE_CIERRA) && 
+               !check(TokenType::LLAVE_CIERRA) && !check(TokenType::FIN_DE_ARCHIVO))
+        {
+            advance();
+        }
+        
+        // Si hay una coma, consumirla también
+        if (check(TokenType::COMA))
+        {
+            advance();
+        }
+        
+        return node;
+    }
+
+    // Resto del código normal...
+    if (check(TokenType::PRIORIDAD))
+    {
+        node->addChild(std::make_unique<ASTNode>(currentToken));
+        advance();
+        
+        if (!check(TokenType::DOS_PUNTOS))
+        {
+            hasSyntacticError = true;
+            
+            std::string foundToken = currentToken.typeToString();
+            if (currentToken.getType() == TokenType::ALTA) foundToken = "ALTA";
+            else if (currentToken.getType() == TokenType::MEDIA) foundToken = "MEDIA";
+            else if (currentToken.getType() == TokenType::BAJA) foundToken = "BAJA";
+            
+            errors.addError(currentToken.getLexeme(), ErrorType::SINTACTICO_ERROR,
+                            "Se esperaba ':' después de 'prioridad', se encontró: " + foundToken,
+                            currentToken.getLine(), currentToken.getColumn(),
+                            ErrorSeverity::ERROR_NORMAL);
+            
+            // Consumir hasta el final
+            while (!check(TokenType::CORCHETE_CIERRA) && !check(TokenType::LLAVE_CIERRA) && 
+                   !check(TokenType::FIN_DE_ARCHIVO))
+            {
+                advance();
+            }
+            
+            return node;
+        }
+        
+        consume(TokenType::DOS_PUNTOS, "Se esperaba ':' despues de 'prioridad'");
+        node->addChild(parsePrioridad());
+    }
+    else if (check(TokenType::RESPONSABLE))
+    {
+        node->addChild(std::make_unique<ASTNode>(currentToken));
+        advance();
+        consume(TokenType::DOS_PUNTOS, "Se esperaba ':' despues de 'responsable'");
+
+        if (check(TokenType::CADENA))
+        {
+            node->addChild(std::make_unique<ASTNode>(currentToken));
+            advance();
+        }
+        else
+        {
+            hasSyntacticError = true;
+            errors.addError(currentToken.getLexeme(), ErrorType::SINTACTICO_ERROR,
+                            "Se esperaba una cadena para el responsable",
+                            currentToken.getLine(), currentToken.getColumn(),
+                            ErrorSeverity::ERROR_NORMAL);
+            advance();
+        }
+    }
+    else if (check(TokenType::FECHA_LIMITE))
+    {
+        node->addChild(std::make_unique<ASTNode>(currentToken));
+        advance();
+        consume(TokenType::DOS_PUNTOS, "Se esperaba ':' despues de 'fecha_limite'");
+
+        if (check(TokenType::FECHA))
+        {
+            node->addChild(std::make_unique<ASTNode>(currentToken));
+            advance();
+        }
+        else
+        {
+            hasSyntacticError = true;
+            errors.addError(currentToken.getLexeme(), ErrorType::SINTACTICO_ERROR,
+                            "Se esperaba una fecha en formato AAAA-MM-DD",
+                            currentToken.getLine(), currentToken.getColumn(),
+                            ErrorSeverity::ERROR_NORMAL);
+            advance();
+        }
+    }
+    else
+    {
+        hasSyntacticError = true;
+        errors.addError(currentToken.getLexeme(), ErrorType::SINTACTICO_ERROR,
+                        "Se esperaba 'prioridad', 'responsable' o 'fecha_limite'",
+                        currentToken.getLine(), currentToken.getColumn(),
+                        ErrorSeverity::ERROR_NORMAL);
+        advance();
+    }
+
+    return node;
+}
+
+std::unique_ptr<ASTNode> SyntaxAnalyzer::parseAtributos()
+{
+    auto node = std::make_unique<ASTNode>("atributos");
+
+    auto primero = parseAtributo();
+    if (!primero || hasSyntacticError)
+    {
+        return node;
+    }
+    node->addChild(std::move(primero));
+
+    while (check(TokenType::COMA))
+    {
+        advance();
+
+        if (hasSyntacticError)
+        {
+            break;
+        }
+
+        auto siguiente = parseAtributo();
+        if (!siguiente)
+        {
+            break;
+        }
+        node->addChild(std::move(siguiente));
+    }
+
+    return node;
+}
+    /*
+
     std::unique_ptr<ASTNode> SyntaxAnalyzer::parseAtributos()
     {
         auto node = std::make_unique<ASTNode>("atributos");
@@ -366,6 +540,7 @@ namespace TaskScript
 
         return node;
     }
+    */
     std::unique_ptr<ASTNode> SyntaxAnalyzer::parseTarea()
     {
         auto node = std::make_unique<ASTNode>("tarea");

@@ -1,0 +1,5 @@
+TABLERO "Proyecto" {
+    COLUMNA "Tareas" {
+        tarea: "Cadena sin cerrar [prioridad: ALTA, responsable: "Pedro]
+    };
+};
