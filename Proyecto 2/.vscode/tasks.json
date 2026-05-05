@@ -1,0 +1,32 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Compilar con Qt",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-ExecutionPolicy", "Bypass",
+                "-File", "${workspaceFolder}/build_qt.ps1"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": [],
+            "detail": "Compila el proyecto con Qt 6"
+        },
+        {
+            "label": "Compilar y Ejecutar Qt",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-ExecutionPolicy", "Bypass",
+                "-File", "${workspaceFolder}/build_qt.ps1",
+                "-run"
+            ],
+            "group": "test",
+            "detail": "Compila y ejecuta la GUI de Qt"
+        }
+    ]
+}

@@ -1,5 +1,0 @@
-TABLERO "Mini" {
-  COLUMNA "A" {
-    tarea: "X" [prioridad: ALTA]
-  };
-};

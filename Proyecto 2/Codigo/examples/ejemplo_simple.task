@@ -1,0 +1,9 @@
+TABLERO "Mi Proyecto" {
+    COLUMNA "Tareas Pendientes" {
+        tarea: "Estudiar" [prioridad: ALTA, responsable: "Ana", fecha_limite: 2026-05-15],
+        tarea: "Practicar" [prioridad: MEDIA, responsable: "Luis", fecha_limite: 2026-05-20]
+    };
+    COLUMNA "Completadas" {
+        tarea: "Investigar" [prioridad: BAJA, responsable: "Ana", fecha_limite: 2026-04-30]
+    };
+};

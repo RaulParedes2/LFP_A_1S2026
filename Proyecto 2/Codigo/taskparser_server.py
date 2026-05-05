@@ -1,15 +1,22 @@
 #!/usr/bin/env python3
-# taskparser_server.py - Servidor web para TaskScript
-
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import urllib.parse
 import json
 import subprocess
-import tempfile
 import os
-import re
+import time
 
 class TaskScriptHandler(BaseHTTPRequestHandler):
+    
+    def do_HEAD(self):
+        """Manejar peticiones HEAD para verificar conectividad"""
+        if self.path == '/':
+            self.send_response(200)
+            self.send_header('Content-Type', 'text/html')
+            self.end_headers()
+        else:
+            self.send_response(404)
+            self.end_headers()
     
     def do_GET(self):
         print(f"GET: {self.path}")
@@ -20,16 +27,11 @@ class TaskScriptHandler(BaseHTTPRequestHandler):
             self.serve_file('web/style.css', 'text/css')
         elif self.path == '/script.js':
             self.serve_file('web/script.js', 'application/javascript')
-        elif self.path == '/reporte_kanban.html':
-            self.serve_file('reporte_kanban.html', 'text/html')
-        elif self.path == '/reporte_responsable.html':
-            self.serve_file('reporte_responsable.html', 'text/html')
-        elif self.path == '/reporte_tokens.html':
-            self.serve_file('reporte_tokens.html', 'text/html')
+        elif 'reporte' in self.path:
+            self.serve_file('web/' + self.path.lstrip('/'), 'text/html')
         else:
             self.send_response(404)
             self.end_headers()
-            self.wfile.write(b'404 - Archivo no encontrado')
     
     def serve_file(self, filepath, content_type):
         try:
@@ -43,60 +45,62 @@ class TaskScriptHandler(BaseHTTPRequestHandler):
         except FileNotFoundError:
             self.send_response(404)
             self.end_headers()
-            self.wfile.write(b'Archivo no encontrado')
     
     def do_POST(self):
         if self.path == '/analyze':
-            print("POST /analyze - Recibiendo código")
+            print("\n=== ANALIZANDO ===")
             
             content_length = int(self.headers['Content-Length'])
             post_data = self.rfile.read(content_length)
-            params = urllib.parse.parse_qs(post_data.decode('utf-8'))
+            decoded = post_data.decode('utf-8')
+            params = urllib.parse.parse_qs(decoded)
             code = params.get('code', [''])[0]
             
-            print(f"Longitud del código: {len(code)} caracteres")
+            print(f"¿Contiene '$'? {'$' in code}")
+            print(f"Longitud: {len(code)}")
             
-            # Guardar código temporal
-            with tempfile.NamedTemporaryFile(mode='w', suffix='.task', delete=False, encoding='utf-8') as f:
+            # Guardar archivo
+            temp_file = 'temp_analysis.task'
+            with open(temp_file, 'w', encoding='utf-8') as f:
                 f.write(code)
-                temp_file = f.name
             
-            print(f"Archivo temporal: {temp_file}")
+            # Verificar
+            with open(temp_file, 'r', encoding='utf-8') as f:
+                contenido = f.read()
+                print(f"Archivo guardado: {len(contenido)} bytes")
+                print(f"¿Contiene '$' en archivo? {'$' in contenido}")
             
-            # Ejecutar analizador C++
-            try:
-                result = subprocess.run(
-                    ['.\\build\\taskparser.exe', temp_file, 'web/reporte'],
-                    capture_output=True,
-                    text=True,
-                    timeout=30
-                )
-                print(f"Analizador ejecutado. Código de salida: {result.returncode}")
-                print(f"STDOUT: {result.stdout[:200]}...")
-                if result.stderr:
-                    print(f"STDERR: {result.stderr[:200]}...")
-            except Exception as e:
-                print(f"Error al ejecutar analizador: {e}")
-                self.send_error_response(f"Error al ejecutar analizador: {str(e)}")
-                os.unlink(temp_file)
-                return
+            # Limpiar JSON anterior
+            if os.path.exists('resultados.json'):
+                os.remove('resultados.json')
             
-            # Leer resultados del JSON
+            # Ejecutar analizador
+            result = subprocess.run(
+                ['.\\build\\taskparser.exe', temp_file, 'reporte'],  # Sin 'web/'
+                capture_output=True,
+                text=True,
+                timeout=30
+)
+            
+            print(f"Código de salida: {result.returncode}")
+            
+            # Leer resultados
             tokens = []
             errors = []
             dot_code = ""
             
-            json_file = 'resultados.json'
-            if os.path.exists(json_file):
-                try:
-                    with open(json_file, 'r', encoding='utf-8') as f:
-                        data = json.load(f)
-                        tokens = data.get('tokens', [])
-                        errors = data.get('errors', [])
-                        dot_code = data.get('dotCode', '')
-                    print(f"JSON cargado: {len(tokens)} tokens, {len(errors)} errores")
-                except Exception as e:
-                    print(f"Error leyendo JSON: {e}")
+            if os.path.exists('resultados.json'):
+                with open('resultados.json', 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                    tokens = data.get('tokens', [])
+                    errors = data.get('errors', [])  # <-- TODOS
+                    dot_code = data.get('dotCode', '')
+
+                print("JSON leído correctamente")
+                print(json.dumps(data, indent=2, ensure_ascii=False))
+                print(f"Errores enviados: {len(errors)}")
+            else:
+                print("ERROR: No se encontró resultados.json")
             
             # Limpiar
             os.unlink(temp_file)
@@ -115,17 +119,8 @@ class TaskScriptHandler(BaseHTTPRequestHandler):
             self.send_header('Content-Length', len(response.encode('utf-8')))
             self.end_headers()
             self.wfile.write(response.encode('utf-8'))
-            print("Respuesta enviada")
-    
-    def send_error_response(self, message):
-        response = json.dumps({'success': False, 'error': message})
-        self.send_response(500)
-        self.send_header('Content-Type', 'application/json')
-        self.end_headers()
-        self.wfile.write(response.encode('utf-8'))
-    
-    def log_message(self, format, *args):
-        print(f"{self.address_string()} - {format % args}")
+            
+            print(f"Enviados {len(errors)} errores\n")
 
 def main():
     port = 8080

@@ -45,6 +45,7 @@ namespace TaskScript{
             //carga un archivo .task para ser analizado
             bool loadFile(const string& filename);
 
+            bool hasLexicalErrors() const;
             //Retorna el siguiente token del flujo (Metodo principal del AFD)
             Token getNextToken();
 

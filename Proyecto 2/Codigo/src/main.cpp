@@ -7,6 +7,8 @@
 #include <iomanip>
 #include <fstream>
 #include <sstream>
+#include <set>
+#include <tuple>
 
 using namespace TaskScript;
 
@@ -27,8 +29,10 @@ std::string escapeJson(const std::string& str) {
 }
 
 // Generar archivo JSON con resultados
+// Generar archivo JSON con resultados (sin duplicados)
 void generateJsonReport(const std::vector<Token>& tokens, 
-                        const ErrorManager& errors,
+                        const ErrorManager& lexErrors,
+                        const ErrorManager& syntaxErrors,
                         const std::string& filename,
                         const std::string& dotCode) {
     std::ofstream jsonFile(filename);
@@ -37,10 +41,13 @@ void generateJsonReport(const std::vector<Token>& tokens,
     jsonFile << "{\n";
     jsonFile << "  \"tokens\": [\n";
     
+    int tokenCount = 1;
     for (size_t i = 0; i < tokens.size(); i++) {
         const auto& token = tokens[i];
+        if (token.getType() == TokenType::FIN_DE_ARCHIVO) continue;
+        
         jsonFile << "    {";
-        jsonFile << "\"no\": " << (i + 1) << ", ";
+        jsonFile << "\"no\": " << tokenCount++ << ", ";
         jsonFile << "\"lexeme\": \"" << escapeJson(token.getLexeme()) << "\", ";
         jsonFile << "\"type\": \"" << token.typeToString() << "\", ";
         jsonFile << "\"line\": " << token.getLine() << ", ";
@@ -53,11 +60,33 @@ void generateJsonReport(const std::vector<Token>& tokens,
     jsonFile << "  ],\n";
     jsonFile << "  \"errors\": [\n";
     
-    const auto& errorList = errors.getAllErrors();
-    for (size_t i = 0; i < errorList.size(); i++) {
-        const auto& error = errorList[i];
+    // Usar set para evitar duplicados
+    std::set<std::tuple<std::string, int, int, std::string>> seen;
+    std::vector<Error> uniqueErrors;
+    
+    // Agregar errores léxicos
+    for (const auto& error : lexErrors.getAllErrors()) {
+        auto key = std::make_tuple(error.getLexeme(), error.getLine(), error.getColumn(), error.getTypeString());
+        if (seen.find(key) == seen.end()) {
+            seen.insert(key);
+            uniqueErrors.push_back(error);
+        }
+    }
+    
+    // Agregar errores sintácticos
+    for (const auto& error : syntaxErrors.getAllErrors()) {
+        auto key = std::make_tuple(error.getLexeme(), error.getLine(), error.getColumn(), error.getTypeString());
+        if (seen.find(key) == seen.end()) {
+            seen.insert(key);
+            uniqueErrors.push_back(error);
+        }
+    }
+    
+    // Escribir errores únicos
+    for (size_t i = 0; i < uniqueErrors.size(); i++) {
+        const auto& error = uniqueErrors[i];
         jsonFile << "    {";
-        jsonFile << "\"no\": " << error.getId() << ", ";
+        jsonFile << "\"no\": " << (i + 1) << ", ";
         jsonFile << "\"lexeme\": \"" << escapeJson(error.getLexeme()) << "\", ";
         jsonFile << "\"type\": \"" << error.getTypeString() << "\", ";
         jsonFile << "\"description\": \"" << escapeJson(error.getDescription()) << "\", ";
@@ -65,11 +94,11 @@ void generateJsonReport(const std::vector<Token>& tokens,
         jsonFile << "\"column\": " << error.getColumn() << ", ";
         jsonFile << "\"severity\": \"" << error.getSeverityString() << "\"";
         jsonFile << "}";
-        if (i < errorList.size() - 1) jsonFile << ",";
+        if (i < uniqueErrors.size() - 1) jsonFile << ",";
         jsonFile << "\n";
     }
     
-    jsonFile << "  ],\n";
+    jsonFile << "\n  ],\n";
     jsonFile << "  \"dotCode\": \"" << escapeJson(dotCode) << "\"\n";
     jsonFile << "}\n";
     
@@ -109,29 +138,14 @@ void printTokenTable(const std::vector<Token>& tokens) {
 void printErrorTable(const ErrorManager& errors) {
     if (errors.hasErrors()) {
         std::cout << "\n=== TABLA DE ERRORES ===\n";
-        std::cout << std::left
-                  << std::setw(5) << "No."
-                  << std::setw(20) << "Lexema"
-                  << std::setw(12) << "Tipo"
-                  << std::setw(10) << "Linea"
-                  << std::setw(10) << "Columna"
-                  << std::setw(10) << "Gravedad"
-                  << std::endl;
-        std::cout << std::string(77, '-') << std::endl;
-        
         for (const auto& error : errors.getAllErrors()) {
-            std::string lexeme = error.getLexeme();
-            if (lexeme.length() > 18) lexeme = lexeme.substr(0, 15) + "...";
-            
-            std::cout << std::left
-                      << std::setw(5) << error.getId()
-                      << std::setw(20) << lexeme
-                      << std::setw(12) << error.getTypeString()
-                      << std::setw(10) << error.getLine()
-                      << std::setw(10) << error.getColumn()
-                      << std::setw(10) << error.getSeverityString()
-                      << std::endl;
-            std::cout << "     Descripcion: " << error.getDescription() << std::endl;
+            std::cout << "No. " << error.getId() 
+                      << " | Lexema: " << error.getLexeme()
+                      << " | Tipo: " << error.getTypeString()
+                      << " | Linea: " << error.getLine()
+                      << " | Columna: " << error.getColumn()
+                      << " | " << error.getSeverityString()
+                      << "\n     Descripcion: " << error.getDescription() << std::endl;
         }
         std::cout << std::endl;
     }
@@ -155,7 +169,6 @@ int main(int argc, char* argv[]) {
     
     if (argc < 2) {
         std::cout << "Uso: " << argv[0] << " <archivo.task> [nombre_reporte]\n";
-        std::cout << "Ejemplo: " << argv[0] << " examples/Archivo_Correcto.task\n";
         return 1;
     }
     
@@ -164,95 +177,75 @@ int main(int argc, char* argv[]) {
     
     std::cout << "Archivo de entrada: " << filename << "\n\n";
     
-    // 1. Inicializar componentes
-    ErrorManager errorManager;
-    LexicalAnalyzer lexer(errorManager);
+    // 1. Análisis léxico
+    ErrorManager lexErrors;
+    LexicalAnalyzer lexer(lexErrors);
     
-    // 2. Cargar archivo
     if (!lexer.loadFile(filename)) {
         std::cout << "Error fatal: No se pudo cargar el archivo.\n";
         return 1;
     }
     
-    // 3. Realizar analisis lexico completo
-    std::cout << "--- ANALISIS LEXICO ---\n";
+    // Obtener todos los tokens
+    std::vector<Token> tokens;
     Token token = lexer.getNextToken();
     while (token.getType() != TokenType::FIN_DE_ARCHIVO) {
-        std::cout << token.toString() << std::endl;
+        tokens.push_back(token);
         token = lexer.getNextToken();
     }
     
-    // Mostrar tabla de tokens
-    const auto& tokens = lexer.getTokens();
+    std::cout << "Tokens encontrados: " << tokens.size() << "\n";
     printTokenTable(tokens);
-    
-    // Mostrar errores lexicos
-    printErrorTable(errorManager);
-    
+    printErrorTable(lexErrors);
     std::cout << lexer.getStatistics() << "\n\n";
     
-    // 4. Realizar analisis sintactico
+    // 2. Análisis sintáctico
     std::cout << "--- ANALISIS SINTACTICO ---\n";
     
-    // Crear nuevo manejador de errores para el parser
     ErrorManager syntaxErrors;
-    
-    // Reiniciar el lexer para empezar desde el principio
     lexer.reset();
-    
-    // Crear parser con el lexer reiniciado
     SyntaxAnalyzer parser(lexer, syntaxErrors);
     
     auto ast = parser.parse();
     
-    // Verificar el resultado
+    std::string dotCode = "";
+    
     if (ast != nullptr) {
-        std::cout << "Analisis sintactico completado exitosamente.\n";
-        std::cout << "Arbol de derivacion generado con " << ast->getNodeCount() << " nodos.\n\n";
-        
-        // Imprimir arbol en consola
-        std::cout << "=== ARBOL DE DERIVACION ===\n";
+        std::cout << "Analisis sintactico exitoso!\n";
+        std::cout << "Nodos del arbol: " << ast->getNodeCount() << "\n\n";
         ast->printTree();
-        std::cout << std::endl;
-        
-        // 5. Generar reportes
-        std::cout << "--- GENERANDO REPORTES ---\n";
-        
-        ReportGenerator reporter;
-        reporter.loadData(tokens, syntaxErrors.getAllErrors());
-        reporter.loadAST(ast.get());
-        
-        if (reporter.saveAllReports(reportBase)) {
-            std::cout << "Reportes generados exitosamente:\n";
-            std::cout << "  - " << reportBase << "_kanban.html\n";
-            std::cout << "  - " << reportBase << "_responsable.html\n";
-            std::cout << "  - " << reportBase << "_tokens.html\n";
-        } else {
-            std::cout << "Error al generar algunos reportes.\n";
-        }
-        
-        // 6. Generar archivo DOT
-        std::string dotCode = parser.generateDotCode();
+        dotCode = parser.generateDotCode();
         saveDotFile(reportBase + "_arbol.dot", dotCode);
-        
-        // 7. Generar archivo JSON para la interfaz web
-        generateJsonReport(tokens, syntaxErrors, "resultados.json", dotCode);
-        
-        std::cout << "\nPara generar la imagen del arbol con Graphviz:\n";
-        std::cout << "  dot -Tpng " << reportBase << "_arbol.dot -o " << reportBase << "_arbol.png\n";
-        std::cout << "\nPara ver la interfaz web, abra web/index.html en su navegador.\n";
-        
     } else {
-        std::cout << "Analisis sintactico fallido debido a errores.\n";
+        std::cout << "Analisis sintactico fallido.\n";
         printErrorTable(syntaxErrors);
-        
-        // Generar JSON incluso si hay errores
-        generateJsonReport(tokens, syntaxErrors, "resultados.json", "");
     }
     
-    // 7. Mostrar resumen final
+    // 3. Generar reportes HTML (SIEMPRE)
+    std::cout << "\n--- GENERANDO REPORTES ---\n";
+    
+    ReportGenerator reporter;
+    reporter.loadData(tokens, syntaxErrors.getAllErrors());
+    
+    if (ast != nullptr) {
+        reporter.loadAST(ast.get());
+    }
+    
+    if (reporter.saveAllReports("web/" +reportBase)) {
+        std::cout << "Reportes generados:\n";
+        std::cout << "  - " << reportBase << "_kanban.html\n";
+        std::cout << "  - " << reportBase << "_responsable.html\n";
+        std::cout << "  - " << reportBase << "_tokens.html\n";
+    } else {
+        std::cout << "Error al generar reportes.\n";
+    }
+    
+    // 4. Generar JSON
+    generateJsonReport(tokens, lexErrors, syntaxErrors, "resultados.json", dotCode);
+    
+    // 5. Resumen final
     std::cout << "\n=== RESUMEN FINAL ===\n";
-    std::cout << "Errores lexicos: " << errorManager.getErrorCount() << "\n";
+    std::cout << "Errores lexicos: " << lexErrors.getErrorCount() << "\n";
     std::cout << "Errores sintacticos: " << syntaxErrors.getErrorCount() << "\n";
     std::cout << "Tokens reconocidos: " << tokens.size() << "\n";
     

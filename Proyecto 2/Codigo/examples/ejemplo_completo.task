@@ -1,0 +1,15 @@
+TABLERO "Desarrollo de Software" {
+    COLUMNA "Por Hacer" {
+        tarea: "Diseñar arquitectura" [prioridad: ALTA, responsable: "Carlos", fecha_limite: 2026-05-10],
+        tarea: "Revisar requisitos" [prioridad: ALTA, responsable: "Maria", fecha_limite: 2026-05-12],
+        tarea: "Configurar repositorio" [prioridad: BAJA, responsable: "Pedro", fecha_limite: 2026-05-15],
+    };
+    COLUMNA "En Progreso" {
+        tarea: "Desarrollar API" [prioridad: ALTA, responsable: "Carlos", fecha_limite: 2026-05-20],
+        tarea: "Diseñar base de datos" [prioridad: MEDIA, responsable: "Maria", fecha_limite: 2026-05-18],
+    };
+    COLUMNA "Completado" {
+        tarea: "Planificación inicial" [prioridad: ALTA, responsable: "Pedro", fecha_limite: 2026-05-01],
+        tarea: "Reunión de kickoff" [prioridad: MEDIA, responsable: "Ana", fecha_limite: 2026-04-28],
+    };
+};

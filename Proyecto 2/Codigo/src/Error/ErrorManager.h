@@ -25,6 +25,8 @@ namespace TaskScript
         void clear();
         string generateHtmlErrorTable() const;
         string getErrorStats() const;
+        bool hasLexicalErrors() const;
+        
     };
 }
 #endif // ERROR_MANAGER_H

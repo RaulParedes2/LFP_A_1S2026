@@ -53,7 +53,7 @@ fileInput.addEventListener('change', (e) => {
     fileInput.value = '';
 });
 
-// Analizar código
+// Analizar código - Versión mejorada
 btnAnalyze.addEventListener('click', async () => {
     const code = editor.value;
     if (!code.trim()) {
@@ -65,15 +65,13 @@ btnAnalyze.addEventListener('click', async () => {
     btnAnalyze.disabled = true;
     
     try {
-        const formData = new URLSearchParams();
-        formData.append('code', code);
-        
+        // Enviar como texto plano en lugar de URLSearchParams
         const response = await fetch('http://localhost:8080/analyze', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
+                'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8',
             },
-            body: formData.toString()
+            body: 'code=' + encodeURIComponent(code)
         });
         
         if (!response.ok) {
@@ -93,7 +91,10 @@ btnAnalyze.addEventListener('click', async () => {
             
             statusBar.innerHTML = `Análisis completado: ${currentTokens.length} tokens, ${currentErrors.length} errores`;
             
-            // Cargar el reporte Kanban automáticamente
+            if (currentErrors.length > 0) {
+                console.log("Errores detectados:", currentErrors);
+            }
+            
             loadReportInFrame('reporte_kanban.html');
         } else {
             statusBar.innerHTML = 'Error en el análisis';
@@ -101,10 +102,8 @@ btnAnalyze.addEventListener('click', async () => {
         
     } catch (error) {
         console.error('Error:', error);
-        statusBar.innerHTML = 'Error de conexión. ¿El servidor está ejecutándose?';
-        
-        // Mostrar instrucciones si el servidor no está corriendo
-        alert('No se pudo conectar al servidor.\n\nAsegúrese de ejecutar:\n.\\build\\taskparser_server.exe\n\nLuego recargue la página.');
+        statusBar.innerHTML = ' Error de conexión. ¿El servidor está ejecutándose?';
+        alert('No se pudo conectar al servidor.\n\nAsegúrese de ejecutar:\n.\\build\\taskparser.exe\n\nLuego recargue la página.');
     }
     
     btnAnalyze.disabled = false;
@@ -151,9 +150,9 @@ btnViewGraph.addEventListener('click', () => {
     statusBar.innerHTML = 'Abriendo visualizador de árbol';
 });
 
-// Abrir reportes
+// Abrir reportes - CORREGIDO
 btnKanban.addEventListener('click', () => {
-    window.open('reporte_kanban.html', '_blank');
+    window.open('reporte_kanban.html', '_blank');  // Sin 'web/'
 });
 
 btnResponsable.addEventListener('click', () => {
@@ -163,6 +162,14 @@ btnResponsable.addEventListener('click', () => {
 btnTokens.addEventListener('click', () => {
     window.open('reporte_tokens.html', '_blank');
 });
+
+
+// Cargar reporte en el iframe
+function loadReportInFrame(fileName) {
+    if (reportFrame) {
+        reportFrame.src = fileName;  // Sin 'web/'
+    }
+}
 
 // Actualizar tabla de tokens
 function updateTokenTable(tokens) {
@@ -184,7 +191,7 @@ function updateTokenTable(tokens) {
     });
 }
 
-// Actualizar tabla de errores
+// Actualizar tabla de errores - Versión mejorada
 function updateErrorTable(errors) {
     errorBody.innerHTML = '';
     if (!errors || errors.length === 0) {
@@ -194,14 +201,16 @@ function updateErrorTable(errors) {
         return;
     }
     
-    errors.forEach((error) => {
+    console.log("Mostrando", errors.length, "errores:", errors);
+    
+    errors.forEach((error, idx) => {
         const row = errorBody.insertRow();
         if (error.severity === 'CRITICO') {
             row.classList.add('critico-row');
         } else if (error.severity === 'ERROR') {
             row.classList.add('error-row');
         }
-        row.insertCell(0).textContent = error.no || '';
+        row.insertCell(0).textContent = error.no || (idx + 1);
         row.insertCell(1).textContent = error.lexeme || '';
         row.insertCell(2).textContent = error.type || '';
         row.insertCell(3).textContent = error.description || '';
@@ -210,14 +219,13 @@ function updateErrorTable(errors) {
         row.insertCell(6).textContent = error.severity || '';
     });
 }
-
 // Cargar reporte en el iframe
-function loadReportInFrame(fileName) {
+/*function loadReportInFrame(fileName) {
     if (reportFrame) {
         reportFrame.src = fileName;
     }
 }
-
+*/
 // Verificar conexión con el servidor
 async function checkServer() {
     try {

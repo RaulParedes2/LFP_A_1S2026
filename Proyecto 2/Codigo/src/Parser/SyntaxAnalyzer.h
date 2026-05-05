@@ -25,7 +25,7 @@ namespace TaskScript
         void advance();
         bool check(TokenType type) const;
         bool match(TokenType type);
-        void consume(TokenType expected, const std::string &errorMessage);
+        Token consume(TokenType expected, const std::string &errorMessage);
         Token peek() const;
 
         void synchronize(const std::vector<TokenType> &syncTokens);
